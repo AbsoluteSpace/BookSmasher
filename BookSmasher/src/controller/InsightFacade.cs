@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Classifier.src.machineLearning;
 using Classifier.src.model;
 
@@ -9,67 +7,40 @@ namespace Classifier.src.controller
 {
     public class InsightFacade : IInsightFacade
     {
-        // think about if this is best collection
         private List<string> _bookIds = new List<string>();
+        private List<Book> _books = new List<Book>();
 
         // bag of words stored here, not great choice, but should be easy to fix
         private List<string> _bagOfWords = new List<string>();
 
-        // TODO these need to change at some point
-        private Book _book1 { get; set; }
-        private Book _book2 { get; set; }
-
-        // maybe add file extension here too because then the correct thing can be called without checking -> can get from content
         public List<string> AddBook(string id, string content)
         {
-            // could probably put the id part in the is valid id check
-            if (id == null || content == null)
+            // TODO do file check in different area
+            if (content == null)
             {
                 throw new InvalidOperationException("Id and content must be provided to add a book.");
             }
-
-            if (IdHelper.IdAlreadyAdded(id) || !IdHelper.IsValid(id))
-            {
-                throw new InvalidOperationException("Id either doesn't exist or is invalid.");
-            }
-
-            // extract information from txt file with Extractor
-            // figure out way to make this more general
-            // maybe interface for extractor
-            // and then specific extractor for each type of file
-            // dependency inversion
-
-            // switch for now here, don't want it -> need like polymoprhism or something
+            // if else stuff for now here, don't want it -> need like polymoprhism or something
             if (!content.EndsWith(".txt"))
             {
                 throw new NotSupportedException("This file format isn't accepted.");
             }
 
-            // this is bad because need it to be scalable
-
-            // maybe in try catch if there is an error
-            var bookBuilder = new BookBuilder();
-            _bagOfWords = bookBuilder.BuildBagOfWords(_bagOfWords);
-            var newBook = bookBuilder.ConstructBook(id, content, _bagOfWords);
-
-            if (_book1 == null)
+            if (IdHelper.IdAlreadyAdded(id) || !IdHelper.IsValid(id))
             {
-                _book1 = newBook;
-            } else
-            {
-                _book2 = newBook;
+                throw new InvalidOperationException("Id is invalid.");
             }
 
-            // store the book representation in local storage
-            // want to do good caching, but for now just have local global variable
+            var bookBuilder = new BookBuilder(_bagOfWords);
+            var newBook = bookBuilder.ConstructBook(id, content);
+            _bagOfWords = bookBuilder.bagOfWords;
+
+            // TODO improve storage of books -> caching?
             //var bookKeeper = new BookKeeper();
             //bookKeeper.CacheBook(newBook);
-            // TODO add back in
-
-            // add the id to a list of added books
+            _books.Add(newBook);
             _bookIds.Add(id);
 
-            // kind of weird to return private var 
             return _bookIds;
         }
 
@@ -81,13 +52,13 @@ namespace Classifier.src.controller
 
             // TODO named tuples
             // TODO watch if duplicates are stored between the two books -> for now store in just book1
-            var X_train = _book1.ConstructTrainingX(_bagOfWords);
-            var y = _book1.classifiedExamples.Item2;
+            var X_train = _books[0].ConstructTrainingX(_bagOfWords);
+            var y = _books[0].classifiedExamples.Item2;
             
             var model = new RandomForest(maxDepth, numTrees);
             model.Fit(X_train, y);
 
-            var X = _book1.ConstructTestX(_bagOfWords);
+            var X = _books[0].ConstructTestX(_bagOfWords);
 
             var predictedExamples = model.Predict(X);
 
@@ -105,24 +76,19 @@ namespace Classifier.src.controller
 
         public List<string> ListBooks()
         {
-            // still sketch, see above
             return _bookIds;
         }
 
         public List<string> RemoveBook(string id)
         {
-            // check validity of id and if it exists
             if (!IdHelper.IdAlreadyAdded(id) || !IdHelper.IsValid(id))
             {
-                throw new InvalidOperationException("Id either doesn't exist or is invalid.");
+                throw new InvalidOperationException("Id is invalid.");
             }
 
-            // remove from local storage
+            // TODO remove from local storage with BookKeeper
 
-            // remove id from private var
-            int indexToRemove = _bookIds.FindIndex(x => x.Equals(id));
-            _bookIds.RemoveAt(indexToRemove);
-
+            _bookIds.RemoveAt(_bookIds.FindIndex(x => x.Equals(id)));
             return _bookIds;
         }
 

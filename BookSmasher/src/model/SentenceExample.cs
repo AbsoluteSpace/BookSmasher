@@ -27,6 +27,9 @@ namespace Classifier.src.model
         // higher int is better scoring
         public int prevSentenceScore { get; set; }
 
-
+        public SentenceExample()
+        {
+            wordIndexes = new List<int>();
+        }
     }
 }

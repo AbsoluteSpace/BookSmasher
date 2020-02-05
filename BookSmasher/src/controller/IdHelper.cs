@@ -7,16 +7,16 @@ namespace Classifier.src.controller
 {
     public static class IdHelper
     {
+        // TODO check if ID already added
         public static bool IdAlreadyAdded(string id)
         {
-            // TODO check if ID already added
             return false;
         }
 
+        // TODO add more conditions to check if id is good
         public static bool IsValid(string id)
         {
-            // TODO check if ID is valid based on some conditions.
-            return true;
+            return !string.IsNullOrWhiteSpace(id);
         }
     }
 }

@@ -14,12 +14,19 @@ namespace Classifier.src.model
         // order is guranteed, so can always recunstruct original book as txt
         public List<SentenceExample> clusteredExamples {get; set;}
 
-        // where examples that can be used as training go
+        // where examples that can be used as training go TODO I don't like this
         public Tuple<List<SentenceExample>, List<int>> classifiedExamples { get; set; }
 
 
         // bag of words stored here and maybe retrieved when a new book is added
         // maybe TODO
+
+        public Book()
+        {
+            clusteredExamples = new List<SentenceExample>();
+            classifiedExamples = new Tuple<List<SentenceExample>, List<int>>(new List<SentenceExample>(), new List<int>());
+
+        }
 
         public List<List<int>> ConstructTrainingX(List<string> bagOfWords)
         {

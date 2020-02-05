@@ -10,25 +10,31 @@ namespace BookSmasher
             // TODO add hub for options other than just this set path when time
             // TODO generalize for more books
             // TODO write that id can't contain commas or something
-            Console.WriteLine("Add book 1 with id,filepath");
-            var book1Info = Console.ReadLine();
-            Console.WriteLine("Add book 2 with id,filepath");
-            var book2Info = Console.ReadLine();
+            Console.WriteLine("Add book 1. Format: id,filepath");
 
-            var book1Id = book1Info.Split(",")[0];
-            var book1Content = book1Info.Split(",")[1];
+            var book1Info = Console.ReadLine().Split(",");
 
-            var book2Id = book2Info.Split(",")[0];
-            var book2Content = book2Info.Split(",")[1];
+            if (book1Info.Length != 2)
+            {
+                throw new Exception("id and filepath must be seperated by a comma and neither may contain a comma");
+            }
 
+            //Console.WriteLine("Add book 2 with id,filepath");
+            //var book2Info = Console.ReadLine();
+
+            //var book2Id = book2Info.Split(",")[0];
+            //var book2Content = book2Info.Split(",")[1];
+
+            // TODO formatting class for this
             var insightFacade = new InsightFacade();
-            insightFacade.AddBook(book1Id, book1Content);
-            insightFacade.AddBook(book2Id, book2Content);
+            insightFacade.AddBook(book1Info[0].Trim(), book1Info[1].Trim());
 
-            insightFacade.TrainModel(book1Id, book2Id);
+            //insightFacade.AddBook(book2Id, book2Content);
 
-            // TODO fiddle with numbers
-            insightFacade.GenerateBook(8, 20);
+            //insightFacade.TrainModel(book1Id, book2Id);
+
+            //// TODO fiddle with numbers
+            //insightFacade.GenerateBook(8, 20);
 
 
         }

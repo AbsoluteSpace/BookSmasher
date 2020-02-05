@@ -1,96 +1,92 @@
 ﻿using Classifier.src.model;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Classifier.src.controller
 {
     // Retrieve information from input files
     public class BookBuilder
     {
-        // TODO should this be initialized in the constructor?
-        //private List<string> _bagOfWords = new List<string>();
+        // TODO advanced sentence handling
+        private char[] _delimiterChars = { '.', '!', '?' };
 
-        public BookBuilder()
+        public List<string> bagOfWords;
+
+        public BookBuilder(List<string> bagOfWords)
         {
-
+            this.bagOfWords = bagOfWords;
         }
 
-        public Book ConstructBook(string id, string content, List<string> bagOfWords)
+        public Book ConstructBook(string id, string content)
         {
-            // rip all of the sentences out of the book and shove in the examples for the book
-            // 1. build example sentences properly classified
-            // 2. each time an example is built, from top to bottom, add it into the book.
+            var lines = ParseLines(content);
 
-            // expanding on step 1, get words and punctuation, lookup words and stuff for index
-            //, find posn in paragraph
-            var lines = ParseLines(content, bagOfWords);
-
-            // at very end classify each of these according to some classifier algorithm
-            // argue which one
-            //var clusterAlgo = new KMeans();
-            // TODO big priority
-
-
-            // set id of book
             var newBook = new Book();
             newBook.id = id;
-            // TODO need to make general, working for now
-            newBook.clusteredExamples = lines.Cast<SentenceExample>().ToList(); ;
+            newBook.clusteredExamples = lines.Cast<SentenceExample>().ToList(); // TODO make more general
+
+            // at very end classify each of these according to some classifier algorithm
 
             return newBook;
         }
 
         // TODO should have restrictions on what sentences cna contain otherwise security issue
-        private List<SentenceExample> ParseLines(string content, List<string> bagOfWords)
+        private List<SentenceExample> ParseLines(string content)
         {
             var output = new List<SentenceExample>();
 
             // read all the lines from the file including whitespace
             string[] lines = System.IO.File.ReadAllLines(content);
 
+            string sentenceToCont = null;
+
             for (int i = 0; i < lines.Length; i++)
             {
-                var se = new SentenceExample();
+                var sentences = lines[i].Split(_delimiterChars).Where(s => !string.IsNullOrEmpty(s)).ToArray();
+                var endVal = sentences.Length;
 
-                // split this based on periods.
-                // If more than one thing, then have to deal with it all
-                // first would look at previous
-                // second at first and so on
-                // last would look at the next one
+                if (sentences.Length == 0)
+                {
+                    continue;
+                }
 
-                // if only one thing then grab previous and next
+                if (!string.IsNullOrWhiteSpace(sentenceToCont))
+                {
+                    sentences[0] = sentenceToCont.Trim() + " " + sentences[0];
+                    sentenceToCont = null;
+                }
 
-                // current one that you're on
-                // get indeices of words and punctuation used with hashset
+                // TODO this is bad sructure
+                if (!(lines[i].EndsWith('.') || lines[i].EndsWith('!') || lines[i].EndsWith('?')))
+                {
+                    sentenceToCont = sentences[sentences.Length-1];
+                    endVal--;
+                }
 
-                //se.paragraphPosition = ;
+                for (int j = 0; j < endVal; j++)
+                {
+                    var s = new SentenceExample();
+                    s.sentence = sentences[j].TrimEnd() + ".";
 
-                // new plan, take line, split based on periods, see if something left over from prev line
-                // if so add to the first split, and if sentence doesn't end with period then continue it for next
-                // line
+                    // TODO doesn't look at punctuation
+                    var words = sentences[j].Split(" ");
+                    // TODO too many loops
+                    for (int k = 0; k < words.Length; k++)
+                    {
+                        if (!bagOfWords.Contains(words[k]))
+                        {
+                            bagOfWords.Add(words[k]);
+                        }
 
+                        s.wordIndexes.Add(bagOfWords.IndexOf(words[k]));
+                    }
 
-                //se.sentence = ;
-                //se.wordIndexes = ;
+                    output.Add(s);
+                }
+
             }
 
             return output;
-        }
-
-        public List<string> BuildBagOfWords(List<string> bagOfWords)
-        {
-            // can be passed in as empty
-            // don't let there be duplicates
-
-
-            // build bag of words representation for this book
-            // go through each line and then add word into List if not already present
-            // all have 0 as a value
-
-            return null;
-
         }
     }
 }
