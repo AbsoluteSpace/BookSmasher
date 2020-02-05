@@ -61,6 +61,11 @@ namespace Classifier.src.machineLearning
         // TODO move, thi isn't the right place for it
         public int FindMode(List<int> x)
         {
+            if (x.Count == 0)
+            {
+                return 0;
+            }
+
             return x.GroupBy(v => v)
             .OrderByDescending(g => g.Count())
             .First()

@@ -5,11 +5,11 @@ namespace BookSmasher.src.machineLearning
 {
     public class RandomTree
     {
-        public DecisionTree DecisionTreeRoot = null;
+        public DecisionTree decisionTreeRoot = null;
 
         public RandomTree(int maxDepth)
         {
-            DecisionTreeRoot = new DecisionTree(maxDepth, new RandomStumpInfoGain());
+            decisionTreeRoot = new DecisionTree(maxDepth, new RandomStumpInfoGain());
         }
 
         public void Fit(List<List<int>> X, List<int> y)
@@ -29,13 +29,12 @@ namespace BookSmasher.src.machineLearning
                 bootstrapY.Add(y[idx]);
             }
 
-            DecisionTreeRoot.Fit(bootstrapX, bootstrapY);
-            var cat = 0;
+            decisionTreeRoot.Fit(bootstrapX, bootstrapY);
         }
 
         public List<int> Predict(List<List<int>> X)
         {
-            return DecisionTreeRoot.Predict(X);
+            return decisionTreeRoot.Predict(X);
         }
     }
 }
