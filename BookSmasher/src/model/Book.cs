@@ -15,7 +15,7 @@ namespace Classifier.src.model
         public List<SentenceExample> clusteredExamples {get; set;}
 
         // where examples that can be used as training go TODO I don't like this
-        public Tuple<List<SentenceExample>, List<int>> classifiedExamples { get; set; }
+        public List<Tuple<SentenceExample,int>> classifiedExamples { get; set; }
 
 
         // bag of words stored here and maybe retrieved when a new book is added
@@ -24,7 +24,7 @@ namespace Classifier.src.model
         public Book()
         {
             clusteredExamples = new List<SentenceExample>();
-            classifiedExamples = new Tuple<List<SentenceExample>, List<int>>(new List<SentenceExample>(), new List<int>());
+            classifiedExamples = new List<Tuple<SentenceExample, int>>();
 
         }
 
@@ -33,15 +33,17 @@ namespace Classifier.src.model
             var retVal = new List<List<int>>();
 
             // TODO will need to be more than bag of words at some point
-            for (int i = 0; i < classifiedExamples.Item1.Count; i++)
+            for (int i = 0; i < classifiedExamples.Count; i++)
             {
+                retVal.Add(new List<int>());
+
                 // initialize with 0 by default for the correct length
                 for (int j = 0; j < bagOfWords.Count; j++)
                 {
-                    retVal[i][j] = 0;
+                    retVal[i].Add(0);
                 }
 
-                var sentence = classifiedExamples.Item1[i];
+                var sentence = classifiedExamples[i].Item1;
                 // TODO check not off by 1
                 foreach(var wordIdx in sentence.wordIndexes)
                 {

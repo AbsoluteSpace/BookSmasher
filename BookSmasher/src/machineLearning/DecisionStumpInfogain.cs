@@ -68,7 +68,7 @@ namespace BookSmasher.src.machineLearning
             int numFeatures = X[0].Count; // all elements should be the same size TODO THIS WILL PROBABLY BE PROB
 
             // TODO improve
-            int[] count = new int[y.Max()]; // all elements to 0 by default
+            int[] count = new int[y.Max() + 1]; // all elements to 0 by default
             foreach (var i in y)
             {
                 count[i]++;
@@ -166,6 +166,12 @@ namespace BookSmasher.src.machineLearning
         public double CalculateEntropy(int[] count)
         {
             var totalCount = count.Sum();
+
+            if (totalCount == 0)
+            {
+                return 0;
+            }
+
             var weightedCounts = count.Select(x => x / totalCount);
 
             return Entropy(weightedCounts.ToList());

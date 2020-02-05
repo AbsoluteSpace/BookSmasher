@@ -26,7 +26,7 @@ namespace Classifier.src.machineLearning
             {
                 var model = new RandomTree(_maxDepth);
                 model.Fit(X, y);
-                trees[i] = model;
+                trees.Add(model);
             }
 
             _trees = trees;

@@ -14,18 +14,18 @@ namespace BookSmasher.src.machineLearning
 
         public void Fit(List<List<int>> X, List<int> y)
         {
-            int numFeatures = X[0].Count;
+            int numExamples = X.Count;
 
             var bootstrapX = new List<List<int>>();
             var bootstrapY = new List<int>();
 
             // fill up array with random examples with replacement
             var rand = new Random();
-            for (int i = 0; i < numFeatures; i++)
+            for (int i = 0; i < numExamples; i++)
             {
-                var idx = rand.Next(0, numFeatures);
-                bootstrapX[idx] = X[idx];
-                bootstrapY[idx] = y[idx];
+                var idx = rand.Next(0, numExamples);
+                bootstrapX.Add(X[idx]);
+                bootstrapY.Add(y[idx]);
             }
 
             DecisionTreeRoot.Fit(bootstrapX, bootstrapY);

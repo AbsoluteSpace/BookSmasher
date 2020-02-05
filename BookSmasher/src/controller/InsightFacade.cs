@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Classifier.src.machineLearning;
 using Classifier.src.model;
 
@@ -53,8 +54,15 @@ namespace Classifier.src.controller
             // TODO named tuples
             // TODO watch if duplicates are stored between the two books -> for now store in just book1
             var X_train = _books[0].ConstructTrainingX(_bagOfWords);
-            var y = _books[0].classifiedExamples.Item2;
-            
+            var y = new List<int>();
+
+            foreach (var label in _books[0].classifiedExamples)
+            {
+                y.Add(label.Item2);
+            }
+
+            //var y = (List<int>)_books[0].classifiedExamples.Select(x => x.Item2);
+
             var model = new RandomForest(maxDepth, numTrees);
             model.Fit(X_train, y);
 
@@ -92,9 +100,23 @@ namespace Classifier.src.controller
             return _bookIds;
         }
 
-        public IMLModel TrainModel(string id1, string id2)
+        public void TrainModel(string id1, string id2)
         {
             // need both books so error check for that
+            var firstBook = _books[_bookIds.IndexOf(id1)];
+            var secondBook = _books[_bookIds.IndexOf(id2)];
+
+            Random rand = new Random();
+            foreach (var example in firstBook.clusteredExamples) {
+                // TODO mad dumb, but just an experiment to test ML classifier
+                firstBook.classifiedExamples.Add(new Tuple<SentenceExample,int>(example, rand.Next(0, 4)));
+            }
+
+            foreach (var example in secondBook.clusteredExamples)
+            {
+                // TODO mad dumb, but just an experiment to test ML classifier
+                secondBook.classifiedExamples.Add(new Tuple<SentenceExample, int>(example, rand.Next(0,4)));
+            }
 
             // take ids and grabsome number of classified examples from each book, and then display one,
             // and rank the best number of sentences to follow in order that type of sentence
@@ -124,7 +146,7 @@ namespace Classifier.src.controller
             // then shoulkd have clusters^2 number of training examples to work with
 
             // save trained examples int books
-            throw new NotImplementedException();
+            return;
         }
     }
 }

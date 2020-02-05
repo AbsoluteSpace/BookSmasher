@@ -21,7 +21,7 @@ namespace Classifier.src.controller
         List<string> ListBooks();
 
         // train model for book combination in local storage
-        IMLModel TrainModel(string id1, string id2);
+        void TrainModel(string id1, string id2);
 
         // generate new book from two provided books
         // TODO undecided params

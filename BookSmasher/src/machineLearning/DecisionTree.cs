@@ -28,7 +28,7 @@ namespace BookSmasher.src.machineLearning
             int numFeatures = X[0].Count;
 
             // TODO this is wrong TODO TODO should be able to handle random too
-            var model = (DecisionStumpInfoGain) _stump;
+            var model = (RandomStumpInfoGain) _stump;
             model.Fit(X,y);
 
             if (_maxDepth <= 1 || model.splitVariable == -1)
@@ -73,7 +73,7 @@ namespace BookSmasher.src.machineLearning
 
             var yhat = new int[numExamples];
 
-            var model = (DecisionStumpInfoGain)_stump;
+            var model = (RandomStumpInfoGain)_stump;
 
             if (model.splitVariable == -1)
             {
