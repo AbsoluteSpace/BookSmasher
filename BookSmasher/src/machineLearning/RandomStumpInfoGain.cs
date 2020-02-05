@@ -20,7 +20,7 @@ namespace BookSmasher.src.machineLearning
 
         public void Fit(List<List<int>> X, List<int> y)
         {
-            int numFeatures = X[0].Count;
+            int numFeatures = X.Count != 0 ? X[0].Count : 0;
             int k = (int) Math.Floor(Math.Sqrt(numFeatures));
 
             // better way: https://stackoverflow.com/a/17530353/10576762

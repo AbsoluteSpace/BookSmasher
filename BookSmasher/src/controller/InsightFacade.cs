@@ -61,14 +61,20 @@ namespace Classifier.src.controller
                 y.Add(label.Item2);
             }
 
+            var X_t = GenerateFakeX();
+            var y_t = GenerateFakeY(X_t);
+
+            var X_r = GenerateFakeX();
+
             //var y = (List<int>)_books[0].classifiedExamples.Select(x => x.Item2);
 
             var model = new RandomForest(maxDepth, numTrees);
-            model.Fit(X_train, y);
+            model.Fit(X_t, y_t);
 
             var X = _books[0].ConstructTestX(_bagOfWords);
 
-            var predictedExamples = model.Predict(X);
+            // TODO think about how we're reusing training data in test stuff and extremes
+            var predictedExamples = model.Predict(X_r);
 
             // now print
 
@@ -79,7 +85,10 @@ namespace Classifier.src.controller
             // just print these to the console
             // or into txt file
 
-            throw new NotImplementedException();
+            // TODO need check that y, X same length
+
+            // TODO seems to always predict same thing, which is wack with test stuff
+            return null;
         }
 
         public List<string> ListBooks()
@@ -147,6 +156,48 @@ namespace Classifier.src.controller
 
             // save trained examples int books
             return;
+        }
+
+        private List<List<int>> GenerateFakeX()
+        {
+            var output = new List<List<int>>();
+            var rand = new Random();
+
+            for (int i = 0; i < 200; i++)
+            {
+                var toAdd = new List<int>();
+                for (int j = 0; j < 40; j++)
+                {
+                    toAdd.Add(rand.Next(0,2));
+                }
+                output.Add(toAdd);
+            }
+
+            return output;
+        }
+
+        private List<int> GenerateFakeY(List<List<int>> X)
+        {
+            var output = new List<int>();
+
+            for (int i = 0; i < X.Count; i++)
+            {
+                if (X[i][4] == 1 || X[i][2] == 0)
+                {
+                    if (X[i][6] == 1 || X[i][5] == 0)
+                    {
+                        output.Add(1);
+                    } else
+                    {
+                        output.Add(0);
+                    }
+                } else
+                {
+                    output.Add(0);
+                }
+            }
+
+            return output;
         }
     }
 }

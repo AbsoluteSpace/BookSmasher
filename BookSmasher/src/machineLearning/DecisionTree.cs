@@ -23,9 +23,9 @@ namespace BookSmasher.src.machineLearning
 
         // TODO all of these are going to need a return type of some sort
         public void Fit(List<List<int>> X, List<int> y)
-        {
+        {// TODO watch out fr empty X in all of these cases
             int numExamples = X.Count;
-            int numFeatures = X[0].Count;
+            int numFeatures = numExamples != 0 ? X[0].Count : 0;
 
             // TODO this is wrong TODO TODO should be able to handle random too
             var model = (RandomStumpInfoGain) _stump;
@@ -59,9 +59,9 @@ namespace BookSmasher.src.machineLearning
 
             // Worried about all this casting
             splitModel = model;
-            subModel1 = new DecisionTree(_maxDepth - 1, _stump);
+            subModel1 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
+            subModel0 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
             subModel1.Fit(X.Where(x => x[model.splitVariable] > model.splitValue).ToList(), y1);
-            subModel0 = new DecisionTree(_maxDepth - 1, _stump);
             subModel0.Fit(X.Where(x => x[model.splitVariable] <= model.splitValue).ToList(), y0);
 
         }
@@ -69,7 +69,7 @@ namespace BookSmasher.src.machineLearning
         public List<int> Predict(List<List<int>> X)
         {
             int numExamples = X.Count;
-            int numFeatures = X[0].Count;
+            int numFeatures = numExamples != 0 ? X[0].Count : 0;
 
             var yhat = new int[numExamples];
 

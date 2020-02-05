@@ -22,7 +22,7 @@ namespace BookSmasher.src.machineLearning
         public List<int> Predict(List<List<int>> X)
         {
             int numExamples = X.Count;
-            int numFeatures = X[0].Count; // all elements should be the same size TODO THIS WILL PROBABLY BE PROB
+            int numFeatures = numExamples != 0 ? X[0].Count : 0; // all elements should be the same size TODO THIS WILL PROBABLY BE PROB
 
             var yhat = new int[numExamples];
             foreach(var i in yhat)
@@ -65,7 +65,12 @@ namespace BookSmasher.src.machineLearning
         public void Fit(List<List<int>> X, List<int> y, int[] splitFeatures = null)
         {
             int numExamples = X.Count;
-            int numFeatures = X[0].Count; // all elements should be the same size TODO THIS WILL PROBABLY BE PROB
+            int numFeatures = numExamples != 0 ? X[0].Count : 0; // all elements should be the same size TODO THIS WILL PROBABLY BE PROB
+
+            if (numExamples == 0 || numFeatures == 0)
+            {
+                return;
+            }
 
             // TODO improve
             int[] count = new int[y.Max() + 1]; // all elements to 0 by default
@@ -83,6 +88,7 @@ namespace BookSmasher.src.machineLearning
             splitSat = GetArgMax(count);
             splitNot = -1;
 
+            // TODO maybe move this up before entropy check
             if (y.Distinct().Count() <= 1)
             {
                 return;
@@ -172,21 +178,20 @@ namespace BookSmasher.src.machineLearning
                 return 0;
             }
 
-            var weightedCounts = count.Select(x => x / totalCount);
-
-            return Entropy(weightedCounts.ToList());
+            var weightedCounts = count.Select(x => (double) x / totalCount).ToList();
+            return Entropy(weightedCounts);
         }
 
-        public double Entropy(List<int> vector)
+        public double Entropy(List<double> vector)
         {
             // might be able to do this with a sum
             double entropy = 0;
             foreach (var prob in vector)
             {
-                entropy -= prob * Math.Log(prob);
+                entropy -= prob != 0 ? prob * Math.Log(prob) : 0;
             }
 
-            return -entropy; // TODO could be problem here, double check
+            return entropy; // TODO could be problem here, double check
         }
 
         public int GetArgMax(int[] count)

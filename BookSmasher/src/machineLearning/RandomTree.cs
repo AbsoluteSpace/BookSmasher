@@ -14,6 +14,7 @@ namespace BookSmasher.src.machineLearning
 
         public void Fit(List<List<int>> X, List<int> y)
         {
+            // TODO this is duplicated
             int numExamples = X.Count;
 
             var bootstrapX = new List<List<int>>();
@@ -29,6 +30,7 @@ namespace BookSmasher.src.machineLearning
             }
 
             DecisionTreeRoot.Fit(bootstrapX, bootstrapY);
+            var cat = 0;
         }
 
         public List<int> Predict(List<List<int>> X)

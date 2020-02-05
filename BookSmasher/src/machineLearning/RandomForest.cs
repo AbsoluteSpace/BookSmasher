@@ -16,20 +16,18 @@ namespace Classifier.src.machineLearning
         {
             _numTrees = numTrees;
             _maxDepth = maxDepth;
+
+            _trees = new List<RandomTree>();
         }
 
         public void Fit(List<List<int>> X, List<int> y)
         {
-            var trees = new List<RandomTree>();
-
             for (int i = 0; i < _numTrees; i++)
             {
                 var model = new RandomTree(_maxDepth);
                 model.Fit(X, y);
-                trees.Add(model);
+                _trees.Add(model);
             }
-
-            _trees = trees;
 
         }
 
@@ -42,12 +40,19 @@ namespace Classifier.src.machineLearning
 
             for (int i = 0; i < _numTrees; i++)
             {
-                predictions[i] = _trees[i].Predict(X);
+                predictions.Add(_trees[i].Predict(X));
             }
 
             for (int i = 0; i < numExamples; i++)
             {
-                predictionsMode[i] = FindMode(predictions[i]);
+                var toAdd = new List<int>();
+
+                for (int j = 0; j < _numTrees; j++)
+                {
+                    toAdd.Add(predictions[j][i]);
+                }
+
+                predictionsMode.Add(FindMode(toAdd));
             }
 
             return predictionsMode;
