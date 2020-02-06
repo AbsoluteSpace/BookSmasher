@@ -115,29 +115,30 @@ namespace BookSmasher.src.machineLearning
                 foreach(var val in thresholds)
                 {
                     // indices where feature > threshold is their label otherwise 0
-                    var y_vals = new List<int>();
-                    foreach (var y_val in y)
+                    var y1_vals = new List<int>();
+                    var y0_vals = new List<int>();
+                    for (int i = 0; i < X.Count; i++)
                     {
-                        if (y_val > val)
+                        if (X[i][d] > val)
                         {
-                            y_vals.Add(y_val);
+                            y1_vals.Add(y[i]);
                         } else
                         {
-                            y_vals.Add(0);
+                            y0_vals.Add(y[i]);
                         }
                     }
 
                     var count1 = new int[count.Length];
                     var count0 = new int[count.Length];
 
-                    foreach (var i in y_vals)
+                    foreach (var i in y1_vals)
                     {
                         count1[i]++;
                     }
 
-                    for (int i = 0; i < count1.Length; i++)
+                    foreach (var i in y0_vals)
                     {
-                        count0[i] = count[i] - count1[i];
+                        count0[i]++;
                     }
 
                     var entropy1 = CalculateEntropy(count1);
@@ -151,6 +152,7 @@ namespace BookSmasher.src.machineLearning
                     if (infoGain > maxGain)
                     {
                         maxGain = infoGain;
+
                         splitVariable = d;
                         splitValue = val;
                         splitSat = GetArgMax(count1);
