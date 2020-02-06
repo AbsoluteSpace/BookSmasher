@@ -11,7 +11,7 @@ namespace BookSmasher.src.machineLearning
         int splitSat { get; set; }
         int splitNot { get; set; }
 
-        void Fit(List<List<int>> X, List<int> y);
+        void Fit(List<List<int>> X, List<int> y, int[] splitFeatures = null);
         List<int> Predict(List<List<int>> X);
     }
 }

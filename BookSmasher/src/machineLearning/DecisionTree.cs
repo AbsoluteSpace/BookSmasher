@@ -10,7 +10,6 @@ namespace BookSmasher.src.machineLearning
         private int _maxDepth = 0;
         private IStump _stump = null;
 
-        public IStump splitModel = null;
         public DecisionTree subModel1 = null;
         public DecisionTree subModel0 = null;
 
@@ -27,19 +26,16 @@ namespace BookSmasher.src.machineLearning
             int numExamples = X.Count;
             int numFeatures = numExamples != 0 ? X[0].Count : 0;
 
-            // TODO this is wrong TODO TODO should be able to handle random too
-            var model = _stump;
-            model.Fit(X,y);
+            _stump.Fit(X,y);
 
-            if (_maxDepth <= 1 || model.splitVariable == -1)
+            if (_maxDepth <= 1 || _stump.splitVariable == -1)
             {
                 // either max depth reached or decision stump does nothing, so use the stump
                 //_stump = null;
-                splitModel = null;
+                //splitModel = null;
                 subModel1 = null;
                 subModel0 = null;
 
-                // TODO fix 
                 return;
 
             }
@@ -49,7 +45,7 @@ namespace BookSmasher.src.machineLearning
 
             for (int i = 0; i < numExamples; i++)
             {
-                if (X[i][model.splitVariable] > model.splitValue)
+                if (X[i][_stump.splitVariable] > _stump.splitValue)
                 {
                     y1.Add(y[i]);
                 } else
@@ -58,23 +54,20 @@ namespace BookSmasher.src.machineLearning
                 }
             }
 
-            // Worried about all this casting
-            splitModel = model;
-
             // TODO fix this
-            if (ReferenceEquals(_stump.GetType(), new DecisionStumpInfoGain()))
-            {
+            //if (ReferenceEquals(_stump.GetType(), new DecisionStumpInfoGain()))
+            //{
                 subModel1 = new DecisionTree(_maxDepth - 1, new DecisionStumpInfoGain());
                 subModel0 = new DecisionTree(_maxDepth - 1, new DecisionStumpInfoGain());
 
-            } else
-            {
-                subModel1 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
-                subModel0 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
-            }
+            //} else
+            //{
+            //    subModel1 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
+            //    subModel0 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
+            //}
 
             if (y1.Count != 0) {
-                subModel1.Fit(X.Where(x => x[model.splitVariable] > model.splitValue).ToList(), y1);
+                subModel1.Fit(X.Where(x => x[_stump.splitVariable] > _stump.splitValue).ToList(), y1);
             } else
             {
                 subModel1 = null;
@@ -82,7 +75,7 @@ namespace BookSmasher.src.machineLearning
 
             if (y0.Count != 0)
             {
-                subModel0.Fit(X.Where(x => x[model.splitVariable] <= model.splitValue).ToList(), y0);
+                subModel0.Fit(X.Where(x => x[_stump.splitVariable] <= _stump.splitValue).ToList(), y0);
             }
             else
             {
@@ -96,38 +89,37 @@ namespace BookSmasher.src.machineLearning
             int numExamples = X.Count;
             int numFeatures = numExamples != 0 ? X[0].Count : 0;
 
-            var yhat = new int[numExamples];
+            var yhat = new List<int>();
 
-            var model = _stump;
-
-            if (model == null || model.splitVariable == -1)
+            if (_stump == null || _stump.splitVariable == -1)
             {
-                foreach (var i in yhat)
+                for (int i = 0; i < numExamples; i++)
                 {
-                    yhat[i] = model.splitSat;
+                    yhat.Add(_stump.splitSat);
                 }
-
-            } else if (subModel1 == null)
+            }
+            else if (subModel1 == null)
             {
-                return model.Predict(X);
-            } else
+                yhat = _stump.Predict(X);
+            }
+            else
             {
-                var pred1 = subModel1.Predict(X.Where(x => x[model.splitVariable] > model.splitValue).ToList());
-                var pred0 = subModel0.Predict(X.Where(x => x[model.splitVariable] <= model.splitValue).ToList());
+                var pred1 = subModel1.Predict(X.Where(x => x[_stump.splitVariable] > _stump.splitValue).ToList());
+                var pred0 = subModel0.Predict(X.Where(x => x[_stump.splitVariable] <= _stump.splitValue).ToList());
 
                 var pred1Index = 0;
                 var pred0Index = 0;
 
                 for (int i = 0; i < numExamples; i++)
                 {
-                    if (X[i][model.splitVariable] > model.splitValue)
+                    if (X[i][_stump.splitVariable] > _stump.splitValue)
                     {
-                        yhat[i] = pred1[pred1Index];
+                        yhat.Add(pred1[pred1Index]);
                         pred1Index++;
                     }
                     else
                     {
-                        yhat[i] = pred0[pred0Index];
+                        yhat.Add(pred0[pred0Index]);
                         pred0Index++;
                     }
                 }

@@ -170,7 +170,7 @@ namespace Classifier.src.controller
                 var toAdd = new List<int>();
                 for (int j = 0; j < 40; j++)
                 {
-                    toAdd.Add(rand.Next(0,2));
+                    toAdd.Add(rand.Next(0,4));
                 }
                 output.Add(toAdd);
             }
