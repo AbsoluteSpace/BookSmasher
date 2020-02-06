@@ -7,15 +7,17 @@ namespace BookSmasher.src.machineLearning
 {
     public class DecisionStumpInfoGain : IStump
     {
-        public int splitVariable = -1;
-        public int splitValue = -1;
-        public int splitSat = -1;
-        public int splitNot = -1;
-
+        public int splitVariable { get; set; }
+        public int splitValue { get; set; }
+        public int splitSat { get; set; }
+        public int splitNot { get; set; }
 
         public DecisionStumpInfoGain()
         {
-
+            splitVariable = -1;
+            splitValue = -1;
+            splitSat = -1;
+            splitNot = -1;
         }
 
         // call after fit
@@ -152,7 +154,7 @@ namespace BookSmasher.src.machineLearning
                         splitVariable = d;
                         splitValue = val;
                         splitSat = GetArgMax(count1);
-                        splitSat = GetArgMax(count0);
+                        splitNot = GetArgMax(count0);
                     }
                 }
 
@@ -165,7 +167,7 @@ namespace BookSmasher.src.machineLearning
             //_splitVariable = d;
             //_splitValue = val;
             //_splitSat = GetArgMax(count1);
-            //_splitSat = GetArgMax(count0);
+            //_splitNot = GetArgMax(count0);
 
         }
 

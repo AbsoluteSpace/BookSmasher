@@ -28,13 +28,14 @@ namespace BookSmasher.src.machineLearning
             int numFeatures = numExamples != 0 ? X[0].Count : 0;
 
             // TODO this is wrong TODO TODO should be able to handle random too
-            var model = (RandomStumpInfoGain) _stump;
+            var model = _stump;
             model.Fit(X,y);
 
             if (_maxDepth <= 1 || model.splitVariable == -1)
             {
                 // either max depth reached or decision stump does nothing, so use the stump
-                splitModel = model;
+                //_stump = null;
+                splitModel = null;
                 subModel1 = null;
                 subModel0 = null;
 
@@ -59,10 +60,34 @@ namespace BookSmasher.src.machineLearning
 
             // Worried about all this casting
             splitModel = model;
-            subModel1 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
-            subModel0 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
-            subModel1.Fit(X.Where(x => x[model.splitVariable] > model.splitValue).ToList(), y1);
-            subModel0.Fit(X.Where(x => x[model.splitVariable] <= model.splitValue).ToList(), y0);
+
+            // TODO fix this
+            if (ReferenceEquals(_stump.GetType(), new DecisionStumpInfoGain()))
+            {
+                subModel1 = new DecisionTree(_maxDepth - 1, new DecisionStumpInfoGain());
+                subModel0 = new DecisionTree(_maxDepth - 1, new DecisionStumpInfoGain());
+
+            } else
+            {
+                subModel1 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
+                subModel0 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
+            }
+
+            if (y1.Count != 0) {
+                subModel1.Fit(X.Where(x => x[model.splitVariable] > model.splitValue).ToList(), y1);
+            } else
+            {
+                subModel1 = null;
+            }
+
+            if (y0.Count != 0)
+            {
+                subModel0.Fit(X.Where(x => x[model.splitVariable] <= model.splitValue).ToList(), y0);
+            }
+            else
+            {
+                subModel0 = null;
+            }
 
         }
 
@@ -73,9 +98,9 @@ namespace BookSmasher.src.machineLearning
 
             var yhat = new int[numExamples];
 
-            var model = (RandomStumpInfoGain)_stump;
+            var model = _stump;
 
-            if (model.splitVariable == -1)
+            if (model == null || model.splitVariable == -1)
             {
                 foreach (var i in yhat)
                 {

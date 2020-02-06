@@ -6,16 +6,19 @@ namespace BookSmasher.src.machineLearning
 {
     public class RandomStumpInfoGain : IStump
     {
-        public int splitVariable = -1;
-        public int splitValue = -1;
-        public int splitSat = -1;
-        public int splitNot = -1;
+        public int splitVariable { get; set; }
+        public int splitValue { get; set; }
+        public int splitSat { get; set; }
+        public int splitNot { get; set; }
 
         public DecisionStumpInfoGain stump = null;
 
         public RandomStumpInfoGain()
         {
-
+            splitVariable = -1;
+            splitValue = -1;
+            splitSat = -1;
+            splitNot = -1;
         }
 
         public void Fit(List<List<int>> X, List<int> y)

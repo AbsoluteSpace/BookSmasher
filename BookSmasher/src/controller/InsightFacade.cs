@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BookSmasher.src.machineLearning;
 using Classifier.src.machineLearning;
 using Classifier.src.model;
 
@@ -68,7 +69,8 @@ namespace Classifier.src.controller
 
             //var y = (List<int>)_books[0].classifiedExamples.Select(x => x.Item2);
 
-            var model = new RandomForest(maxDepth, numTrees);
+            //var model = new RandomForest(maxDepth, numTrees);
+            var model = new DecisionTree(maxDepth, new DecisionStumpInfoGain());
             model.Fit(X_t, y_t);
 
             var X = _books[0].ConstructTestX(_bagOfWords);
@@ -189,11 +191,11 @@ namespace Classifier.src.controller
                         output.Add(1);
                     } else
                     {
-                        output.Add(0);
+                        output.Add(3);
                     }
                 } else
                 {
-                    output.Add(0);
+                    output.Add(2);
                 }
             }
 
