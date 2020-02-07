@@ -1,14 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace BookSmasher.src.controller
 {
     // Communicate with the razor files to display text and information
     public class Renderer
     {
+        // TODO things that are hyperparameters. Undecided on how to set (CV).
+        private int _maxDepth = 8;
+        private int _numTrees = 20;
+        private int _numAdjacentExamples = 4;
+        private int _numExamplesToClassify = 4;
+
         public void RenderAddBook(InsightFacade insightFacade)
         {
             Console.WriteLine("\nAdd book. Format: id,filepath");
@@ -88,12 +92,12 @@ namespace BookSmasher.src.controller
                 }
             }
 
-            // TODO magic number that needs to go
-            Console.WriteLine("\nA sentence will be displayed, followed by 4 other sentences. Rank the 4 from best to worst as the next sentence left to right.\n");
+            Console.WriteLine($"\nA sentence will be displayed, followed by {_numAdjacentExamples} other sentences." +
+                $" Rank the {_numAdjacentExamples} from best to worst as the next sentence left to right.\n");
 
             try
             {
-                insightFacade.TrainModel(ids.ToList());
+                insightFacade.TrainModel(ids.ToList(), _numExamplesToClassify, _numAdjacentExamples);
                 Console.WriteLine("Model trained.");
             } catch (Exception e)
             {
@@ -105,7 +109,55 @@ namespace BookSmasher.src.controller
 
         public void RenderGenerateBook(InsightFacade insightFacade)
         {
+            Console.WriteLine("\nGenerate book after two or more books are trained together.");
 
+            var trainedCollections = RenderListBookCollectionids(insightFacade);
+            if (trainedCollections == null)
+            {
+                Console.WriteLine("\nNo bookCollections added.");
+                return;
+            }
+
+            Console.WriteLine("\nThe following bookCollections are trained:" + trainedCollections);
+            Console.WriteLine("\nWrite the id of the collection you wish to generate a book for. Format: id");
+
+            var id = Console.ReadLine().Trim();
+            var addedColIds = insightFacade.ListBookCollectionNames();
+
+            if (!IdHelper.IdAlreadyAdded(id, addedColIds) || !IdHelper.IsValid(id))
+            {
+                Console.WriteLine($"Aborting, id: {id} is invalid.");
+                return;
+            }
+
+            try
+            {
+                var outputLocation = insightFacade.GenerateBook(id, _maxDepth, _numTrees, _numAdjacentExamples);
+                Console.WriteLine($"New book generated at {outputLocation}.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"New book not generated. " + e.Message);
+                return;
+            }
+        }
+
+        private string RenderListBookCollectionids(InsightFacade insightFacade)
+        {
+            var addedBookCollections = insightFacade.ListBookCollectionNames();
+            var idString = new StringBuilder();
+
+            for (int i = 0; i < addedBookCollections.Count - 1; i++)
+            {
+                idString.Append(addedBookCollections[i] + ", ");
+            }
+
+            if (addedBookCollections.Count == 0)
+            {
+                return null;
+            }
+
+            return idString.Append(addedBookCollections[addedBookCollections.Count - 1]).ToString();
         }
     }
 }

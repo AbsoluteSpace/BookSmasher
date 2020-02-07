@@ -23,7 +23,7 @@ namespace BookSmasher.src.controller
             var newBook = new Book();
             newBook.id = id;
             // TODO did this throw an error
-            newBook.clusteredExamples = ParseLines(content); // TODO make more general -> interface rule of 3
+            newBook.sentences = ParseLines(content); // TODO make more general -> interface rule of 3
 
             // TODO classify each of these according to some classifier algorithm
 

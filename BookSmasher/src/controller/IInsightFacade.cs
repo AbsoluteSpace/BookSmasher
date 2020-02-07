@@ -16,10 +16,10 @@ namespace BookSmasher.src.controller
         List<string> ListBooks();
 
         // train model for book combination in local storage
-        void TrainModel(List<string> ids);
+        void TrainModel(List<string> ids, int numExamplesToClassify, int numAdjacentExamples);
 
         // generate new book from two provided books
         // TODO undecided params
-        string GenerateBook(string id1, string id2, int maxDepth, int numTrees);
+        string GenerateBook(string id, int maxDepth, int numTrees, int numAdjacentExamples);
     }
 }

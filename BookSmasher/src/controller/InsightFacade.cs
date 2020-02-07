@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using BookSmasher.src.controller;
 using BookSmasher.src.machineLearning;
 using BookSmasher.src.model;
 
@@ -12,7 +11,9 @@ namespace BookSmasher.src.controller
         private List<string> _bookIds = new List<string>();
         private List<Book> _books = new List<Book>();
 
-        // bag of words stored here, not great choice, but should be easy to fix
+        private List<BookCollection> _bookCollections = new List<BookCollection>();
+        private List<string> _bookCollectionIds = new List<string>();
+
         private List<string> _bagOfWords = new List<string>();
 
         // todo add parameters and description up here
@@ -44,113 +45,15 @@ namespace BookSmasher.src.controller
             return _bookIds;
         }
 
-        // TODO generaize this
-        public string GenerateBook(string id1, string id2, int maxDepth, int numTrees)
-        {
-            // train model with training data from both books -> random forest
-            // TODO currently books store training ex without reference to which book they're combined with
-
-            // TODO named tuples
-            // TODO watch if duplicates are stored between the two books -> for now store in just book1
-            var firstBook = _books[_bookIds.IndexOf(id1)];
-            var secondBook = _books[_bookIds.IndexOf(id2)];
-
-            var allSentences = new List<SentenceExample>();
-            allSentences.AddRange(firstBook.clusteredExamples);
-            allSentences.AddRange(secondBook.clusteredExamples);
-
-            Random rand = new Random();
-            foreach (var sentence in allSentences)
-            {
-                // ideally this would already be done when adding TODO
-                sentence.classification = rand.Next(0, 4);
-            }
-
-            var XTrain = firstBook.ConstructTrainingX(_bagOfWords);
-            var yTrain = firstBook.classifiedExamples.Select(x => x.Item2).ToList();
-            //var model = new RandomForest(maxDepth, numTrees);
-            var model = new DecisionTree(maxDepth, new DecisionStumpInfoGain());
-            model.Fit(XTrain, yTrain);
-
-            // take one sentence and remove from all sentences
-            // predict it
-            // take 5 (or k) more, assign values, predict them and pick the best -> wasteful I know
-            // use the best (highest label) as the next sentence and remove it, return all others
-            // keep doing this storing sentences in order until number reached or no more sentences
-            // write this list to a text file or console
-
-            var output = new List<SentenceExample>();
-            var firstSentence = allSentences[rand.Next(0, allSentences.Count)];
-            allSentences.Remove(firstSentence);
-            output.Add(firstSentence);
-
-            while (allSentences.Count != 0) {
-
-                var adjacentClassifications = new List<int>();
-                var nextSentences = new List<SentenceExample>();
-                for (int i = 0; i < 5; i++)
-                {
-                    var nextSentence = allSentences[rand.Next(0, allSentences.Count)];
-                    if (nextSentences.Contains(nextSentence) && allSentences.Count > 8)
-                    {
-                        i--;
-                        continue;
-                    }
-                    nextSentence.prevSentenceClassification = firstSentence.classification;
-                    adjacentClassifications.Add(nextSentence.classification);
-                    nextSentences.Add(nextSentence);
-                }
-
-                foreach (var sentence in nextSentences)
-                {
-                    sentence.adjacentSentenceClassification = adjacentClassifications;
-                }
-
-                var testSentences = firstBook.ConstructTestX(_bagOfWords, nextSentences);
-                var labels = model.Predict(testSentences);
-
-                // gets the best sentence
-                int maxValue = labels.Max();
-                int maxIndex = labels.ToList().IndexOf(maxValue);
-
-                var bestNextSentence = nextSentences[maxIndex];
-
-                allSentences.Remove(bestNextSentence);
-                output.Add(bestNextSentence);
-
-                firstSentence = bestNextSentence;
-
-            }
-
-            string[] stringOutput = output.Select(x => x.sentence).ToArray();
-
-
-            System.IO.File.WriteAllLines(@"..\..\output.txt", stringOutput);
-
-
-
-            //var XPredict = firstBook.ConstructTestX(_bagOfWords, firstBook.clusteredExamples);
-            //// TODO think about how we're reusing training data in test stuff and extremes
-            //var predictedExamples = model.Predict(XPredict);
-
-            // now print
-
-            // feed first sentence of random book to this as first line
-            // then grab random 5 sentences from both books and pick one with best score as next sentence
-            // repeat this process until either set number of sentences or end of sentences
-
-            // just print these to the console
-            // or into txt file
-
-            // TODO need check that y, X same length
-
-            // TODO seems to always predict same thing, which is wack with test stuff
-            return null;
-        }
 
         public List<string> ListBooks()
         {
             return _bookIds;
+        }
+
+        public List<string> ListBookCollectionNames()
+        {
+            return _bookCollectionIds;
         }
 
         public List<string> RemoveBook(string id)
@@ -160,21 +63,43 @@ namespace BookSmasher.src.controller
                 throw new InvalidOperationException("Id is invalid.");
             }
 
-            _bookIds.RemoveAt(_bookIds.FindIndex(x => x.Equals(id)));
+            var idx = _bookIds.FindIndex(x => x.Equals(id));
+
+            _books.RemoveAt(idx);
+            _bookIds.RemoveAt(idx);
             return _bookIds;
         }
 
-        public void TrainModel(List<string> ids)
+        public List<string> RemoveBookCollection(string id)
         {
-            // need both books so error check for that
-            var firstBook = _books[_bookIds.IndexOf(ids[0])];
-            var secondBook = _books[_bookIds.IndexOf(ids[1])];
+            if (!IdHelper.IdAlreadyAdded(id, _bookCollectionIds) || !IdHelper.IsValid(id))
+            {
+                throw new InvalidOperationException("Id is invalid.");
+            }
 
-            var output = new List<Tuple<SentenceExample, int>>();
+            var idx = _bookCollectionIds.FindIndex(x => x.Equals(id));
 
+            _bookCollections.RemoveAt(idx);
+            _bookCollectionIds.RemoveAt(idx);
+            return _bookCollectionIds;
+        }
+
+        // TODO add escape by pressing escape for all of these
+        // TODO refactor
+        public void TrainModel(List<string> ids, int numExamplesToClassify, int numAdjacentExamples)
+        {
+            // TODO check that at least 2 books added
+            var trainingBooks = _books.Where(book => ids.Contains(book.id)).ToList();
+
+            var outputExamples = new List<SentenceExample>();
+            var outputLabels = new List<int>();
+
+            // get and classify all sentences
             var allSentences = new List<SentenceExample>();
-            allSentences.AddRange(firstBook.clusteredExamples);
-            allSentences.AddRange(secondBook.clusteredExamples);
+            foreach (var book in trainingBooks)
+            {
+                allSentences.AddRange(book.sentences);
+            }
 
             Random rand = new Random();
             foreach(var sentence in allSentences)
@@ -182,42 +107,39 @@ namespace BookSmasher.src.controller
                 sentence.classification = rand.Next(0, 4);
             }
 
+            // get random assortment of sentences to train on
             RandomUtil.Shuffle(allSentences, rand);
             var sentencesToClassify = new List<SentenceExample>();
-
-            for (int i = 0; i < allSentences.Count && i < 8; i++)
+            for (int i = 0; i < allSentences.Count && i < numExamplesToClassify; i++)
             {
-                // probably better way with random
                 sentencesToClassify.Add(allSentences[i]);
             }
 
             foreach (var sent in sentencesToClassify)
             {
-                Console.WriteLine("Current Sentence: " + sent.sentence);
+                Console.WriteLine("\nCurrent Sentence: " + sent.sentence);
 
-                // TODO can make all these numbers hyperparams
-                // pick 5 random sentences
-
-                var random = new List<SentenceExample>();
-                var classificationsInRandom = new List<int>();
-                for (int j = 0; j < 3; j++)
+                // pick numAdjacentExamples random sentences
+                var randomSentences = new List<SentenceExample>();
+                var classificationsInRandomSentences = new List<int>();
+                for (int j = 0; j < numAdjacentExamples; j++)
                 {
-                    // update classification of before
-                    var toAdd = sentencesToClassify[rand.Next(0, sentencesToClassify.Count)];
-                    toAdd.prevSentenceClassification = sent.classification;
-                    random.Add(toAdd);
-                    classificationsInRandom.Add(toAdd.classification);
+                    // store random sentence and its classification
+                    var sentenceToAdd = sentencesToClassify[rand.Next(0, sentencesToClassify.Count)];
+                    randomSentences.Add(sentenceToAdd);
+                    classificationsInRandomSentences.Add(sentenceToAdd.classification);
                 }
 
-                // display the 5
-                for (int j = 0; j < random.Count; j++)
+                // display the sentences to choose from
+                for (int j = 0; j < randomSentences.Count; j++)
                 {
-                    Console.WriteLine((j + 1) + ": " + random[j].sentence);
+                    Console.WriteLine((j + 1) + ": " + randomSentences[j].sentence);
                 }
 
                 // user ranks them
-                Console.WriteLine("Order the sentences like 1,4,5,2,3");
+                Console.WriteLine("Order the sentences like 1,2,...,N. Left is better, right is worse.");
 
+                // TODO validate the input somehow
                 var ranking = Console.ReadLine().Split(',');
                 var intRanking = new List<int>();
 
@@ -227,63 +149,100 @@ namespace BookSmasher.src.controller
                     intRanking.Add(intToAdd);
                 }
 
-                // use classified sentneces by updating prevsentence, adjacent, and label score
-                foreach(var cs in random)
+                // update features of each random sentence, add them as training data
+                foreach (var cs in randomSentences)
                 {
-                    var idxInRand = random.IndexOf(cs);
+                    var idxInRand = randomSentences.IndexOf(cs);
                     // TODO knowingly putting in bug where it classifies itself as an adjacent
-                    cs.adjacentSentenceClassification = classificationsInRandom;
-                    output.Add(new Tuple<SentenceExample, int>(cs, intRanking[intRanking.IndexOf(idxInRand + 1)]));
+                    cs.adjacentSentenceClassification = classificationsInRandomSentences;
+                    cs.prevSentenceClassification = sent.classification;
+                    outputExamples.Add(cs);
+                    outputLabels.Add(intRanking[intRanking.IndexOf(idxInRand + 1)]);
                 }
 
             }
 
-            firstBook.classifiedExamples = output;
+            var bookCol = new BookCollection(ids);
+            bookCol.sentences = allSentences;
+            bookCol.trainingExamples = outputExamples;
+            bookCol.trainingLabels = outputLabels;
+            bookCol.bagOfWords = _bagOfWords;
 
-            // TODO figure out return value
-            return;
+            _bookCollections.Add(bookCol);
+            _bookCollectionIds.Add(bookCol.id);
+
         }
 
-        private List<List<int>> GenerateFakeX()
+        // TODO generaize this
+        public string GenerateBook(string id, int maxDepth, int numTrees, int numAdjacentExamples)
         {
-            var output = new List<List<int>>();
-            var rand = new Random();
+            // TODO watch if duplicates are stored between the two books -> for now store in just book1
+            var bookCol = _bookCollections[_bookCollectionIds.IndexOf(id)];
 
-            for (int i = 0; i < 200; i++)
+            // train model
+            //var model = new RandomForest(maxDepth, numTrees);
+            var model = new DecisionTree(maxDepth, new DecisionStumpInfoGain());
+            var XTrain = ClassificationUtil.ConstructMatrixX(_bagOfWords, bookCol.trainingExamples);
+            model.Fit(XTrain, bookCol.trainingLabels);
+
+            var allSentences = bookCol.sentences;
+            Random rand = new Random();
+
+            var predictedBook = new List<SentenceExample>();
+
+            // add sentences to predictedBook
+            var firstSentence = allSentences[rand.Next(0, allSentences.Count)];
+            allSentences.Remove(firstSentence);
+            predictedBook.Add(firstSentence);
+
+            while (allSentences.Count != 0)
             {
-                var toAdd = new List<int>();
-                for (int j = 0; j < 40; j++)
+
+                var adjacentClassifications = new List<int>();
+                var nextSentences = new List<SentenceExample>();
+
+                for (int i = 0; i < numAdjacentExamples; i++)
                 {
-                    toAdd.Add(rand.Next(0,4));
-                }
-                output.Add(toAdd);
-            }
-
-            return output;
-        }
-
-        private List<int> GenerateFakeY(List<List<int>> X)
-        {
-            var output = new List<int>();
-
-            for (int i = 0; i < X.Count; i++)
-            {
-                if (X[i][4] == 1 || X[i][2] == 0)
-                {
-                    if (X[i][6] == 1 || X[i][5] == 0)
+                    var nextSentence = allSentences[rand.Next(0, allSentences.Count)];
+                    // no duplicates until the end
+                    if (nextSentences.Contains(nextSentence) && allSentences.Count > numAdjacentExamples)
                     {
-                        output.Add(1);
-                    } else
-                    {
-                        output.Add(3);
+                        i--;
+                        continue;
                     }
-                } else
-                {
-                    output.Add(2);
+                    adjacentClassifications.Add(nextSentence.classification);
+                    nextSentences.Add(nextSentence);
                 }
+
+                // fill in features based on what the sentence is compared against
+                foreach (var sentence in nextSentences)
+                {
+                    sentence.prevSentenceClassification = firstSentence.classification;
+                    sentence.adjacentSentenceClassification = adjacentClassifications;
+                }
+
+                // TODO some wasted time
+                var labels = model.Predict(ClassificationUtil.ConstructMatrixX(_bagOfWords, nextSentences));
+
+                // gets the best sentence according to label
+                int maxValue = labels.Max();
+                int maxIndex = labels.ToList().IndexOf(maxValue);
+
+                var bestNextSentence = nextSentences[maxIndex];
+
+                // add bestNextSentence as next sentence in new book
+                allSentences.Remove(bestNextSentence);
+                predictedBook.Add(bestNextSentence);
+                firstSentence = bestNextSentence;
+
             }
 
-            return output;
+            string[] stringOutput = predictedBook.Select(x => x.sentence).ToArray();
+            var outputLocation = @"..\..\" + bookCol.id + ".txt";
+
+            System.IO.File.WriteAllLines(outputLocation, stringOutput);
+            return outputLocation;
         }
+
     }
 }

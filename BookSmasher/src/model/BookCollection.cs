@@ -7,6 +7,10 @@ namespace BookSmasher.src.model
     // Collection of Books
     class BookCollection
     {
+        // name of collection is ids
+        // TODO customize collection name
+        public string id { get; set; }
+
         // store ids of combined books
         public List<string> ids { get; set; }
 
@@ -16,16 +20,26 @@ namespace BookSmasher.src.model
         // all sentences
         public List<SentenceExample> sentences { get; set; }
 
-        // examples to training model. Item1 is example, item 2 is its label
-        // TODO best to keep them like this or seperate?
-        // TODO name tuple
-        public List<Tuple<SentenceExample, int>> trainingExamples { get; set; }
+        // examples for training the model
+        public List<SentenceExample> trainingExamples { get; set; }
+        public List<int> trainingLabels { get; set; }
 
         public BookCollection(List<string> ids)
         {
             this.ids = ids;
             sentences = new List<SentenceExample>();
-            trainingExamples = new List<Tuple<SentenceExample, int>>();
+            trainingExamples = new List<SentenceExample>();
+            trainingLabels = new List<int>();
+
+            var builder = new StringBuilder();
+
+            foreach(var id in ids)
+            {
+                builder.Append(id + " ");
+            }
+
+            // names with whitespaces are hard
+            id = builder.ToString().TrimEnd().Replace(' ', '_');
         }
     }
 }
