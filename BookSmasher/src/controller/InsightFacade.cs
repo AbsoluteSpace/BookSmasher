@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BookSmasher.src.controller;
 using BookSmasher.src.machineLearning;
 using Classifier.src.machineLearning;
 using Classifier.src.model;
@@ -47,36 +48,93 @@ namespace Classifier.src.controller
         }
 
         // TODO generaize this
-        public string GenerateBook(int maxDepth, int numTrees)
+        public string GenerateBook(string id1, string id2, int maxDepth, int numTrees)
         {
             // train model with training data from both books -> random forest
             // TODO currently books store training ex without reference to which book they're combined with
 
             // TODO named tuples
             // TODO watch if duplicates are stored between the two books -> for now store in just book1
-            var X_train = _books[0].ConstructTrainingX(_bagOfWords);
-            var y = new List<int>();
+            var firstBook = _books[_bookIds.IndexOf(id1)];
+            var secondBook = _books[_bookIds.IndexOf(id2)];
 
-            foreach (var label in _books[0].classifiedExamples)
+            var allSentences = new List<SentenceExample>();
+            allSentences.AddRange(firstBook.clusteredExamples);
+            allSentences.AddRange(secondBook.clusteredExamples);
+
+            Random rand = new Random();
+            foreach (var sentence in allSentences)
             {
-                y.Add(label.Item2);
+                // ideally this would already be done when adding TODO
+                sentence.classification = rand.Next(0, 4);
             }
 
-            var X_t = GenerateFakeX();
-            var y_t = GenerateFakeY(X_t);
-
-            var X_r = GenerateFakeX();
-
-            //var y = (List<int>)_books[0].classifiedExamples.Select(x => x.Item2);
-
+            var XTrain = firstBook.ConstructTrainingX(_bagOfWords);
+            var yTrain = firstBook.classifiedExamples.Select(x => x.Item2).ToList();
             //var model = new RandomForest(maxDepth, numTrees);
             var model = new DecisionTree(maxDepth, new DecisionStumpInfoGain());
-            model.Fit(X_t, y_t);
+            model.Fit(XTrain, yTrain);
 
-            var X = _books[0].ConstructTestX(_bagOfWords);
+            // take one sentence and remove from all sentences
+            // predict it
+            // take 5 (or k) more, assign values, predict them and pick the best -> wasteful I know
+            // use the best (highest label) as the next sentence and remove it, return all others
+            // keep doing this storing sentences in order until number reached or no more sentences
+            // write this list to a text file or console
 
-            // TODO think about how we're reusing training data in test stuff and extremes
-            var predictedExamples = model.Predict(X_r);
+            var output = new List<SentenceExample>();
+            var firstSentence = allSentences[rand.Next(0, allSentences.Count)];
+            allSentences.Remove(firstSentence);
+            output.Add(firstSentence);
+
+            while (allSentences.Count != 0) {
+
+                var adjacentClassifications = new List<int>();
+                var nextSentences = new List<SentenceExample>();
+                for (int i = 0; i < 5; i++)
+                {
+                    var nextSentence = allSentences[rand.Next(0, allSentences.Count)];
+                    if (nextSentences.Contains(nextSentence) && allSentences.Count > 8)
+                    {
+                        i--;
+                        continue;
+                    }
+                    nextSentence.prevSentenceClassification = firstSentence.classification;
+                    adjacentClassifications.Add(nextSentence.classification);
+                    nextSentences.Add(nextSentence);
+                }
+
+                foreach (var sentence in nextSentences)
+                {
+                    sentence.adjacentSentenceClassification = adjacentClassifications;
+                }
+
+                var testSentences = firstBook.ConstructTestX(_bagOfWords, nextSentences);
+                var labels = model.Predict(testSentences);
+
+                // gets the best sentence
+                int maxValue = labels.Max();
+                int maxIndex = labels.ToList().IndexOf(maxValue);
+
+                var bestNextSentence = nextSentences[maxIndex];
+
+                allSentences.Remove(bestNextSentence);
+                output.Add(bestNextSentence);
+
+                firstSentence = bestNextSentence;
+
+            }
+
+            string[] stringOutput = output.Select(x => x.sentence).ToArray();
+
+
+            System.IO.File.WriteAllLines(@"..\..\output.txt", stringOutput);
+
+
+
+            //var XPredict = firstBook.ConstructTestX(_bagOfWords, firstBook.clusteredExamples);
+            //// TODO think about how we're reusing training data in test stuff and extremes
+            //var predictedExamples = model.Predict(XPredict);
 
             // now print
 
@@ -117,46 +175,77 @@ namespace Classifier.src.controller
             var firstBook = _books[_bookIds.IndexOf(id1)];
             var secondBook = _books[_bookIds.IndexOf(id2)];
 
+            var output = new List<Tuple<SentenceExample, int>>();
+
+            var allSentences = new List<SentenceExample>();
+            allSentences.AddRange(firstBook.clusteredExamples);
+            allSentences.AddRange(secondBook.clusteredExamples);
+
             Random rand = new Random();
-            foreach (var example in firstBook.clusteredExamples) {
-                // TODO mad dumb, but just an experiment to test ML classifier
-                firstBook.classifiedExamples.Add(new Tuple<SentenceExample,int>(example, rand.Next(0, 4)));
-            }
-
-            foreach (var example in secondBook.clusteredExamples)
+            foreach(var sentence in allSentences)
             {
-                // TODO mad dumb, but just an experiment to test ML classifier
-                secondBook.classifiedExamples.Add(new Tuple<SentenceExample, int>(example, rand.Next(0,4)));
+                sentence.classification = rand.Next(0, 4);
             }
 
-            // take ids and grabsome number of classified examples from each book, and then display one,
-            // and rank the best number of sentences to follow in order that type of sentence
+            RandomUtil.Shuffle(allSentences, rand);
+            var sentencesToClassify = new List<SentenceExample>();
 
-            // add this in as a collection of trained exampels for the book
-            // then when the book is generated use these to build a model for the book first
-            // TODO renamed classified examples, they're clustered not classified
+            for (int i = 0; i < allSentences.Count && i < 8; i++)
+            {
+                // probably better way with random
+                sentencesToClassify.Add(allSentences[i]);
+            }
 
-            // algo to build trained ex
-            // grab 1 sentence example of each classification type randomly from between both books
-            // grab 2 examples of each classification type from each book or something
-            // display one example from fisrt set and 1 of each classification type from other set
-            // rank the examples,
-            // repeat this for all of first set
+            foreach (var sent in sentencesToClassify)
+            {
+                Console.WriteLine("Current Sentence: " + sent.sentence);
 
-            // represent ordering by what book came first (as a feature) and thne ranking how this cluster was ordered
-            // against that
+                // TODO can make all these numbers hyperparams
+                // pick 5 random sentences
 
+                var random = new List<SentenceExample>();
+                var classificationsInRandom = new List<int>();
+                for (int j = 0; j < 3; j++)
+                {
+                    // update classification of before
+                    var toAdd = sentencesToClassify[rand.Next(0, sentencesToClassify.Count)];
+                    toAdd.prevSentenceClassification = sent.classification;
+                    random.Add(toAdd);
+                    classificationsInRandom.Add(toAdd.classification);
+                }
 
-            // console app to do this
-            // display set 1 sentence
-            // then number and display other sentences
-            // scale with number of sentences displayed so it's not all clusters -> paginate
-            // show how response should be formatted
-            // store new trained exampels with this response info
+                // display the 5
+                for (int j = 0; j < random.Count; j++)
+                {
+                    Console.WriteLine((j + 1) + ": " + random[j].sentence);
+                }
 
-            // then shoulkd have clusters^2 number of training examples to work with
+                // user ranks them
+                Console.WriteLine("Order the sentences like 1,4,5,2,3");
 
-            // save trained examples int books
+                var ranking = Console.ReadLine().Split(',');
+                var intRanking = new List<int>();
+
+                foreach (var entry in ranking)
+                {
+                    var intToAdd = int.Parse(entry);
+                    intRanking.Add(intToAdd);
+                }
+
+                // use classified sentneces by updating prevsentence, adjacent, and label score
+                foreach(var cs in random)
+                {
+                    var idxInRand = random.IndexOf(cs);
+                    // TODO knowingly putting in bug where it classifies itself as an adjacent
+                    cs.adjacentSentenceClassification = classificationsInRandom;
+                    output.Add(new Tuple<SentenceExample, int>(cs, intRanking[intRanking.IndexOf(idxInRand + 1)]));
+                }
+
+            }
+
+            firstBook.classifiedExamples = output;
+
+            // TODO figure out return value
             return;
         }
 

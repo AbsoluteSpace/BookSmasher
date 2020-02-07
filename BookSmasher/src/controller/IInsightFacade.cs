@@ -25,6 +25,6 @@ namespace Classifier.src.controller
 
         // generate new book from two provided books
         // TODO undecided params
-        string GenerateBook(int maxDepth, int numTrees);
+        string GenerateBook(string id1, string id2, int maxDepth, int numTrees);
     }
 }

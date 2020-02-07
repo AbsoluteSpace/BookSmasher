@@ -34,7 +34,7 @@ namespace BookSmasher
             //insightFacade.TrainModel(book1Info[0].Trim(), book2Info[0].Trim());
             insightFacade.TrainModel("cat", "dog");
 
-            insightFacade.GenerateBook(8, 20);
+            insightFacade.GenerateBook("cat", "dog", 8, 20);
             //// TODO fiddle with numbers
 
 

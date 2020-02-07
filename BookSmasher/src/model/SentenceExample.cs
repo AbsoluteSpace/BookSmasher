@@ -23,6 +23,9 @@ namespace Classifier.src.model
         // index for previous sentence classifcation
         public int prevSentenceClassification { get; set; }
 
+        // index for previous sentence classifcation
+        public List<int> adjacentSentenceClassification { get; set; }
+
         // scoring according to prevSentence
         // higher int is better scoring
         public int prevSentenceScore { get; set; }
@@ -31,5 +34,7 @@ namespace Classifier.src.model
         {
             wordIndexes = new List<int>();
         }
+
+        // TODO need way to get all features lined up right and stored
     }
 }
