@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using BookSmasher.src.controller;
+using System.Collections.Generic;
 
 namespace BookSmasher.src.model
 {
@@ -29,15 +29,7 @@ namespace BookSmasher.src.model
             trainingExamples = new List<SentenceExample>();
             trainingLabels = new List<int>();
 
-            var builder = new StringBuilder();
-
-            foreach(var id in ids)
-            {
-                builder.Append(id + " ");
-            }
-
-            // Names with whitespaces are hard.
-            id = builder.ToString().TrimEnd().Replace(' ', '_');
+            id = IdUtil.CreateBookCollectionName(ids);
         }
     }
 }

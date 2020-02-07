@@ -16,5 +16,19 @@ namespace BookSmasher.src.controller
         {
             return !string.IsNullOrWhiteSpace(id);
         }
+
+        // Generates id of book collection.
+        public static string CreateBookCollectionName(List<string> ids)
+        {
+            var builder = new StringBuilder();
+
+            foreach (var id in ids)
+            {
+                builder.Append(id + " ");
+            }
+
+            // Names with whitespaces are hard.
+            return builder.ToString().TrimEnd().Replace(' ', '_');
+        }
     }
 }
