@@ -94,9 +94,6 @@ namespace BookSmasher.src.controller
 
             var trainingBooks = _books.Where(book => ids.Contains(book.id)).ToList();
 
-            var outputExamples = new List<SentenceExample>();
-            var outputLabels = new List<int>();
-
             // Classify all sentences.
             var allSentences = new List<SentenceExample>();
             foreach (var book in trainingBooks)
@@ -118,60 +115,13 @@ namespace BookSmasher.src.controller
                 sentencesToClassify.Add(allSentences[i]);
             }
 
-            foreach (var sent in sentencesToClassify)
-            {
-                Console.WriteLine("\nCurrent Sentence: " + sent.sentence);
-
-                // Pick numAdjacentExamples random sentences.
-                var randomSentences = new List<SentenceExample>();
-                var classificationsInRandomSentences = new List<int>();
-                for (int j = 0; j < numAdjacentExamples; j++)
-                {
-                    // Store random sentence and its classification.
-                    var sentenceToAdd = sentencesToClassify[rand.Next(0, sentencesToClassify.Count)];
-                    if (randomSentences.Contains(sentenceToAdd) && sentencesToClassify.Count > numAdjacentExamples)
-                    {
-                        j--;
-                        continue;
-                    }
-                    randomSentences.Add(sentenceToAdd);
-                    classificationsInRandomSentences.Add(sentenceToAdd.classification);
-                }
-
-                // Display the sentences to choose from.
-                for (int j = 0; j < randomSentences.Count; j++)
-                {
-                    Console.WriteLine((j + 1) + ": " + randomSentences[j].sentence);
-                }
-
-                // User ranks the sentences.
-                Console.WriteLine("Order the sentences like 1,2,...,N. Left is worse, right is better.");
-
-                var ranking = Console.ReadLine().Split(',');
-                var intRanking = new List<int>();
-
-                foreach (var entry in ranking)
-                {
-                    var intToAdd = int.Parse(entry);
-                    intRanking.Add(intToAdd);
-                }
-
-                // Update features of each random sentence, add them as training data.
-                foreach (var cs in randomSentences)
-                {
-                    var idxInRand = randomSentences.IndexOf(cs);
-                    cs.adjacentSentenceClassification = classificationsInRandomSentences;
-                    cs.prevSentenceClassification = sent.classification;
-                    outputExamples.Add(cs);
-                    outputLabels.Add(intRanking[intRanking.IndexOf(idxInRand + 1)]);
-                }
-
-            }
+            // Get training data using sentences from user input.
+            var trainingData = DisplayAdjacentSentences(sentencesToClassify, numAdjacentExamples, rand);
 
             var bookCol = new BookCollection(ids);
             bookCol.sentences = allSentences;
-            bookCol.trainingExamples = outputExamples;
-            bookCol.trainingLabels = outputLabels;
+            bookCol.trainingExamples = trainingData.Item1;
+            bookCol.trainingLabels = trainingData.Item2;
             bookCol.bagOfWords = _bagOfWords;
 
             _bookCollections.Add(bookCol);
@@ -245,6 +195,66 @@ namespace BookSmasher.src.controller
 
             System.IO.File.WriteAllLines(outputLocation, stringOutput);
             return outputLocation;
+        }
+
+        // Display sentences on screen and takes user input to create training data.
+        private Tuple<List<SentenceExample>, List<int>> DisplayAdjacentSentences(List<SentenceExample> sentencesToClassify,
+            int numAdjacentExamples, Random rand)
+        {
+            var trainingExamples = new List<SentenceExample>();
+            var trainingLabels = new List<int>();
+
+            foreach (var sent in sentencesToClassify)
+            {
+                Console.WriteLine("\nCurrent Sentence: " + sent.sentence);
+
+                // Pick numAdjacentExamples random sentences.
+                var randomSentences = new List<SentenceExample>();
+                var classificationsInRandomSentences = new List<int>();
+                for (int j = 0; j < numAdjacentExamples; j++)
+                {
+                    // Store random sentence and its classification.
+                    var sentenceToAdd = sentencesToClassify[rand.Next(0, sentencesToClassify.Count)];
+                    if (randomSentences.Contains(sentenceToAdd) && sentencesToClassify.Count > numAdjacentExamples)
+                    {
+                        j--;
+                        continue;
+                    }
+                    randomSentences.Add(sentenceToAdd);
+                    classificationsInRandomSentences.Add(sentenceToAdd.classification);
+                }
+
+                // Display the sentences to choose from.
+                for (int j = 0; j < randomSentences.Count; j++)
+                {
+                    Console.WriteLine((j + 1) + ": " + randomSentences[j].sentence);
+                }
+
+                // User ranks the sentences.
+                Console.WriteLine("Order the sentences like 1,2,...,N. Left is worse, right is better.");
+
+                var ranking = Console.ReadLine().Split(',');
+                var intRanking = new List<int>();
+
+                foreach (var entry in ranking)
+                {
+                    var intToAdd = int.Parse(entry);
+                    intRanking.Add(intToAdd);
+                }
+
+                // Update features of each random sentence, add them as training data.
+                foreach (var cs in randomSentences)
+                {
+                    var idxInRand = randomSentences.IndexOf(cs);
+                    cs.adjacentSentenceClassification = classificationsInRandomSentences;
+                    cs.prevSentenceClassification = sent.classification;
+                    trainingExamples.Add(cs);
+                    trainingLabels.Add(intRanking[intRanking.IndexOf(idxInRand + 1)]);
+                }
+
+            }
+
+            return new Tuple<List<SentenceExample>, List<int>>(trainingExamples, trainingLabels);
         }
 
     }
