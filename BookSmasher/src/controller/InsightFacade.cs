@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using BookSmasher.src.controller;
 using BookSmasher.src.machineLearning;
-using Classifier.src.machineLearning;
-using Classifier.src.model;
+using BookSmasher.src.model;
 
-namespace Classifier.src.controller
+namespace BookSmasher.src.controller
 {
     public class InsightFacade : IInsightFacade
     {
@@ -16,20 +15,21 @@ namespace Classifier.src.controller
         // bag of words stored here, not great choice, but should be easy to fix
         private List<string> _bagOfWords = new List<string>();
 
+        // todo add parameters and description up here
         public List<string> AddBook(string id, string content)
         {
-            // TODO do file check in different area
+            // check content
             if (content == null)
             {
                 throw new InvalidOperationException("Id and content must be provided to add a book.");
             }
-            // if else stuff for now here, don't want it -> need like polymoprhism or something
             if (!content.EndsWith(".txt"))
             {
                 throw new NotSupportedException("This file format isn't accepted.");
             }
 
-            if (IdHelper.IdAlreadyAdded(id) || !IdHelper.IsValid(id))
+            // check id not added and validity
+            if (IdHelper.IdAlreadyAdded(id, _bookIds) || !IdHelper.IsValid(id))
             {
                 throw new InvalidOperationException("Id is invalid.");
             }
@@ -38,9 +38,6 @@ namespace Classifier.src.controller
             var newBook = bookBuilder.ConstructBook(id, content);
             _bagOfWords = bookBuilder.bagOfWords;
 
-            // TODO improve storage of books -> caching?
-            //var bookKeeper = new BookKeeper();
-            //bookKeeper.CacheBook(newBook);
             _books.Add(newBook);
             _bookIds.Add(id);
 
@@ -158,22 +155,20 @@ namespace Classifier.src.controller
 
         public List<string> RemoveBook(string id)
         {
-            if (!IdHelper.IdAlreadyAdded(id) || !IdHelper.IsValid(id))
+            if (!IdHelper.IdAlreadyAdded(id, _bookIds) || !IdHelper.IsValid(id))
             {
                 throw new InvalidOperationException("Id is invalid.");
             }
-
-            // TODO remove from local storage with BookKeeper
 
             _bookIds.RemoveAt(_bookIds.FindIndex(x => x.Equals(id)));
             return _bookIds;
         }
 
-        public void TrainModel(string id1, string id2)
+        public void TrainModel(List<string> ids)
         {
             // need both books so error check for that
-            var firstBook = _books[_bookIds.IndexOf(id1)];
-            var secondBook = _books[_bookIds.IndexOf(id2)];
+            var firstBook = _books[_bookIds.IndexOf(ids[0])];
+            var secondBook = _books[_bookIds.IndexOf(ids[1])];
 
             var output = new List<Tuple<SentenceExample, int>>();
 

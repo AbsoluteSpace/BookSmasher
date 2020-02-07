@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace Classifier.src.controller
+namespace BookSmasher.src.controller
 {
     public static class IdHelper
     {
-        // TODO check if ID already added
-        public static bool IdAlreadyAdded(string id)
+        // TODO sometimes have to list ids just to send to this which feels extra
+        public static bool IdAlreadyAdded(string id, List<string> addedIds)
         {
-            return false;
+            return addedIds.Contains(id);
         }
 
         // TODO add more conditions to check if id is good

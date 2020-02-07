@@ -1,10 +1,10 @@
-﻿using Classifier.src.model;
+﻿using BookSmasher.src.model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Classifier.src.controller
+namespace BookSmasher.src.controller
 {
     public class BookKeeper
     {

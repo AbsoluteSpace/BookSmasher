@@ -1,11 +1,6 @@
-﻿using Classifier.src.machineLearning;
-using Classifier.src.model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace Classifier.src.controller
+namespace BookSmasher.src.controller
 {
     // Contains high level methods for the project
     interface IInsightFacade
@@ -21,7 +16,7 @@ namespace Classifier.src.controller
         List<string> ListBooks();
 
         // train model for book combination in local storage
-        void TrainModel(string id1, string id2);
+        void TrainModel(List<string> ids);
 
         // generate new book from two provided books
         // TODO undecided params
