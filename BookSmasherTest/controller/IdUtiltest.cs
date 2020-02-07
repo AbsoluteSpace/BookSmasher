@@ -47,5 +47,23 @@ namespace BookSmasherTest.controller
         {
             Assert.False(IdUtil.IsValid(null));
         }
+
+        [Fact]
+        public void CreateBookCollectionNameNullTest()
+        {
+            Assert.Equal("", IdUtil.CreateBookCollectionName(null));
+        }
+
+        [Fact]
+        public void CreateBookCollectionNameEmptyTest()
+        {
+            Assert.Equal("", IdUtil.CreateBookCollectionName(new List<string>()));
+        }
+
+        [Fact]
+        public void CreateBookCollectionNameTest()
+        {
+            Assert.Equal("cat_dog", IdUtil.CreateBookCollectionName(new List<string>(new string[] { "cat", "dog"})));
+        }
     }
 }

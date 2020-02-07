@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <Folder Include="machineLearning\" />
-    <Folder Include="model\" />
   </ItemGroup>
 
 </Project>

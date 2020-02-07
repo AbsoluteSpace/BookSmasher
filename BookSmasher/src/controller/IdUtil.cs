@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace BookSmasher.src.controller
 {
@@ -20,6 +21,11 @@ namespace BookSmasher.src.controller
         // Generates id of book collection.
         public static string CreateBookCollectionName(List<string> ids)
         {
+            if (ids == null)
+            {
+                return "";
+            }
+
             var builder = new StringBuilder();
 
             foreach (var id in ids)
