@@ -21,18 +21,19 @@ namespace BookSmasher.src.controller
 
             if (bookInfo.Length != 2)
             {
-                Console.WriteLine($"Book not added. id and filepath must be seperated by a comma, and neither id nor filepath may contain a comma");
+                Console.WriteLine($"Book not added. id and filepath must be seperated by a comma, and" +
+                    $" neither id nor filepath may contain a comma");
                 return;
             }
 
             var id = bookInfo[0].Trim();
-            var content = bookInfo[1].Trim();
 
             try
             {
-                var addedBookIds = insightFacade.AddBook(id, content);
+                var addedBookIds = insightFacade.AddBook(id, bookInfo[1].Trim());
                 Console.WriteLine($"Book {id} added.");
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine($"Book {id} not added. " + e.Message);
             }
@@ -81,8 +82,8 @@ namespace BookSmasher.src.controller
         // Display console information for training.
         public void RenderTrainBook(InsightFacade insightFacade)
         {
-            Console.WriteLine("\nInput the ids of books to be combined, books must already be added, min 2. Format: id1,id2,...,idN");
-            // TODO add link to see currently added ids
+            Console.WriteLine("\nInput the ids of books to be combined, books must already " +
+                "be added, min 2. Format: id1,id2,...,idN");
 
             var ids = Console.ReadLine().Split(",");
             var addedIds = insightFacade.ListBooks();
@@ -95,8 +96,9 @@ namespace BookSmasher.src.controller
                 }
             }
 
-            Console.WriteLine($"\nA sentence will be displayed, followed by {_numAdjacentExamples} other sentences." +
-                $" Rank the {_numAdjacentExamples} from best to worst as the next sentence. Right is best, left is worst.\n");
+            Console.WriteLine($"\nA sentence will be displayed, followed by {_numAdjacentExamples} other " +
+                $"sentences. Rank the {_numAdjacentExamples} from best to worst as the next sentence. " +
+                $"Right is best, left is worst.\n");
 
             try
             {
