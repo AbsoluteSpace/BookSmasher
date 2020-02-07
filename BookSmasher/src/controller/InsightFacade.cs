@@ -16,10 +16,9 @@ namespace BookSmasher.src.controller
 
         private List<string> _bagOfWords = new List<string>();
 
-        // todo add parameters and description up here
         public List<string> AddBook(string id, string content)
         {
-            // check content
+            // Check content.
             if (content == null)
             {
                 throw new InvalidOperationException("Id and content must be provided to add a book.");
@@ -29,7 +28,7 @@ namespace BookSmasher.src.controller
                 throw new NotSupportedException("This file format isn't accepted.");
             }
 
-            // check id not added and validity
+            // Check id validity.
             if (IdHelper.IdAlreadyAdded(id, _bookIds) || !IdHelper.IsValid(id))
             {
                 throw new InvalidOperationException("Id is invalid.");
@@ -84,17 +83,21 @@ namespace BookSmasher.src.controller
             return _bookCollectionIds;
         }
 
-        // TODO add escape by pressing escape for all of these
         // TODO refactor
         public void TrainModel(List<string> ids, int numExamplesToClassify, int numAdjacentExamples)
         {
-            // TODO check that at least 2 books added
+            // At least 2 ids to train on.
+            if (ids.Count < 2)
+            {
+                throw new Exception("At least 2 ids must be specified.");
+            }
+
             var trainingBooks = _books.Where(book => ids.Contains(book.id)).ToList();
 
             var outputExamples = new List<SentenceExample>();
             var outputLabels = new List<int>();
 
-            // get and classify all sentences
+            // Classify all sentences.
             var allSentences = new List<SentenceExample>();
             foreach (var book in trainingBooks)
             {
@@ -107,7 +110,7 @@ namespace BookSmasher.src.controller
                 sentence.classification = rand.Next(0, 4);
             }
 
-            // get random assortment of sentences to train on
+            // Get random assortment of sentences to train on.
             RandomUtil.Shuffle(allSentences, rand);
             var sentencesToClassify = new List<SentenceExample>();
             for (int i = 0; i < allSentences.Count && i < numExamplesToClassify; i++)
@@ -119,27 +122,31 @@ namespace BookSmasher.src.controller
             {
                 Console.WriteLine("\nCurrent Sentence: " + sent.sentence);
 
-                // pick numAdjacentExamples random sentences
+                // Pick numAdjacentExamples random sentences.
                 var randomSentences = new List<SentenceExample>();
                 var classificationsInRandomSentences = new List<int>();
                 for (int j = 0; j < numAdjacentExamples; j++)
                 {
-                    // store random sentence and its classification
+                    // Store random sentence and its classification.
                     var sentenceToAdd = sentencesToClassify[rand.Next(0, sentencesToClassify.Count)];
+                    if (randomSentences.Contains(sentenceToAdd) && sentencesToClassify.Count > numAdjacentExamples)
+                    {
+                        j--;
+                        continue;
+                    }
                     randomSentences.Add(sentenceToAdd);
                     classificationsInRandomSentences.Add(sentenceToAdd.classification);
                 }
 
-                // display the sentences to choose from
+                // Display the sentences to choose from.
                 for (int j = 0; j < randomSentences.Count; j++)
                 {
                     Console.WriteLine((j + 1) + ": " + randomSentences[j].sentence);
                 }
 
-                // user ranks them
-                Console.WriteLine("Order the sentences like 1,2,...,N. Left is better, right is worse.");
+                // User ranks the sentences.
+                Console.WriteLine("Order the sentences like 1,2,...,N. Left is worse, right is better.");
 
-                // TODO validate the input somehow
                 var ranking = Console.ReadLine().Split(',');
                 var intRanking = new List<int>();
 
@@ -149,11 +156,10 @@ namespace BookSmasher.src.controller
                     intRanking.Add(intToAdd);
                 }
 
-                // update features of each random sentence, add them as training data
+                // Update features of each random sentence, add them as training data.
                 foreach (var cs in randomSentences)
                 {
                     var idxInRand = randomSentences.IndexOf(cs);
-                    // TODO knowingly putting in bug where it classifies itself as an adjacent
                     cs.adjacentSentenceClassification = classificationsInRandomSentences;
                     cs.prevSentenceClassification = sent.classification;
                     outputExamples.Add(cs);
@@ -173,13 +179,11 @@ namespace BookSmasher.src.controller
 
         }
 
-        // TODO generaize this
         public string GenerateBook(string id, int maxDepth, int numTrees, int numAdjacentExamples)
         {
-            // TODO watch if duplicates are stored between the two books -> for now store in just book1
             var bookCol = _bookCollections[_bookCollectionIds.IndexOf(id)];
 
-            // train model
+            // Train model.
             //var model = new RandomForest(maxDepth, numTrees);
             var model = new DecisionTree(maxDepth, new DecisionStumpInfoGain());
             var XTrain = ClassificationUtil.ConstructMatrixX(_bagOfWords, bookCol.trainingExamples);
@@ -190,7 +194,7 @@ namespace BookSmasher.src.controller
 
             var predictedBook = new List<SentenceExample>();
 
-            // add sentences to predictedBook
+            // Add sentences to predictedBook.
             var firstSentence = allSentences[rand.Next(0, allSentences.Count)];
             allSentences.Remove(firstSentence);
             predictedBook.Add(firstSentence);
@@ -204,7 +208,7 @@ namespace BookSmasher.src.controller
                 for (int i = 0; i < numAdjacentExamples; i++)
                 {
                     var nextSentence = allSentences[rand.Next(0, allSentences.Count)];
-                    // no duplicates until the end
+                    // No duplicates until the end.
                     if (nextSentences.Contains(nextSentence) && allSentences.Count > numAdjacentExamples)
                     {
                         i--;
@@ -214,23 +218,22 @@ namespace BookSmasher.src.controller
                     nextSentences.Add(nextSentence);
                 }
 
-                // fill in features based on what the sentence is compared against
+                // Fill in features based on what the sentence is compared against.
                 foreach (var sentence in nextSentences)
                 {
                     sentence.prevSentenceClassification = firstSentence.classification;
                     sentence.adjacentSentenceClassification = adjacentClassifications;
                 }
 
-                // TODO some wasted time
                 var labels = model.Predict(ClassificationUtil.ConstructMatrixX(_bagOfWords, nextSentences));
 
-                // gets the best sentence according to label
+                // Gets the best sentence according to label.
                 int maxValue = labels.Max();
                 int maxIndex = labels.ToList().IndexOf(maxValue);
 
                 var bestNextSentence = nextSentences[maxIndex];
 
-                // add bestNextSentence as next sentence in new book
+                // Add bestNextSentence as next sentence in new book.
                 allSentences.Remove(bestNextSentence);
                 predictedBook.Add(bestNextSentence);
                 firstSentence = bestNextSentence;

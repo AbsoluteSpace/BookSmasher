@@ -2,13 +2,12 @@
 
 namespace BookSmasher.src.model
 {
-    public class Book : IBook
+    // Data structure to store sentence examples.
+    public class Book
     {
-        // TODO look at accessability levels
-        // TODO think about how it's stored, this is wasteful
         public string id { get; set; }
 
-        // order is guranteed, so can always recunstruct original book as txt
+        // Order is guranteed, so can always recunstruct original book as .txt.
         public List<SentenceExample> sentences {get; set;}
 
         public Book()

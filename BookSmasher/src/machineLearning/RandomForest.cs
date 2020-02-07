@@ -4,8 +4,8 @@ using System.Linq;
 
 namespace Classifier.src.machineLearning
 {
-    // build random forest model from data once it is being labelled.
-    public class RandomForest : IMLModel
+    // Build random forest model from data once it is labelled.
+    public class RandomForest
     {
         private int _numTrees = 0;
         private int _maxDepth = 0;
@@ -52,24 +52,11 @@ namespace Classifier.src.machineLearning
                     toAdd.Add(predictions[j][i]);
                 }
 
-                predictionsMode.Add(FindMode(toAdd));
+                predictionsMode.Add(ArrayUtil.FindMode(toAdd));
             }
 
             return predictionsMode;
         }
 
-        // TODO move, thi isn't the right place for it
-        public int FindMode(List<int> x)
-        {
-            if (x.Count == 0)
-            {
-                return 0;
-            }
-
-            return x.GroupBy(v => v)
-            .OrderByDescending(g => g.Count())
-            .First()
-            .Key;
-        }
     }
 }

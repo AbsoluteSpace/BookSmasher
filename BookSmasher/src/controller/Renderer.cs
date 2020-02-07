@@ -4,21 +4,21 @@ using System.Text;
 
 namespace BookSmasher.src.controller
 {
-    // Communicate with the razor files to display text and information
+    // Displays information on the console
     public class Renderer
     {
         // TODO things that are hyperparameters. Undecided on how to set (CV).
         private int _maxDepth = 8;
         private int _numTrees = 20;
         private int _numAdjacentExamples = 4;
-        private int _numExamplesToClassify = 4;
+        private int _numExamplesToClassify = 8;
 
+        // Display console information for adding a new book.
         public void RenderAddBook(InsightFacade insightFacade)
         {
             Console.WriteLine("\nAdd book. Format: id,filepath");
             var bookInfo = Console.ReadLine().Split(",");
 
-            // TODO think about other error cases
             if (bookInfo.Length != 2)
             {
                 Console.WriteLine($"Book not added. id and filepath must be seperated by a comma, and neither id nor filepath may contain a comma");
@@ -38,6 +38,7 @@ namespace BookSmasher.src.controller
             }
         }
 
+        // Display console information for removing a book.
         public void RenderRemoveBook(InsightFacade insightFacade)
         {
             Console.WriteLine("\nRemove book. Format: id");
@@ -55,6 +56,7 @@ namespace BookSmasher.src.controller
             }
         }
 
+        // Display console information for listing added books.
         public void RenderListBook(InsightFacade insightFacade)
         {
             var addedBooks = insightFacade.ListBooks();
@@ -76,6 +78,7 @@ namespace BookSmasher.src.controller
             Console.WriteLine("\nAdded book ids: " + idString.ToString());
         }
 
+        // Display console information for training.
         public void RenderTrainBook(InsightFacade insightFacade)
         {
             Console.WriteLine("\nInput the ids of books to be combined, books must already be added, min 2. Format: id1,id2,...,idN");
@@ -93,7 +96,7 @@ namespace BookSmasher.src.controller
             }
 
             Console.WriteLine($"\nA sentence will be displayed, followed by {_numAdjacentExamples} other sentences." +
-                $" Rank the {_numAdjacentExamples} from best to worst as the next sentence left to right.\n");
+                $" Rank the {_numAdjacentExamples} from best to worst as the next sentence. Right is best, left is worst.\n");
 
             try
             {
@@ -107,6 +110,7 @@ namespace BookSmasher.src.controller
 
         }
 
+        // Display console information for generating a new book.
         public void RenderGenerateBook(InsightFacade insightFacade)
         {
             Console.WriteLine("\nGenerate book after two or more books are trained together.");
@@ -142,6 +146,7 @@ namespace BookSmasher.src.controller
             }
         }
 
+        // Display console information for listing book collections. Helper for now.
         private string RenderListBookCollectionids(InsightFacade insightFacade)
         {
             var addedBookCollections = insightFacade.ListBookCollectionNames();

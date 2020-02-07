@@ -18,7 +18,6 @@ namespace BookSmasher
 
                 var keyPress = Console.ReadKey().Key;
 
-                // TODO not good to have giant switch
                 switch (keyPress)
                 {
                     case ConsoleKey.A:

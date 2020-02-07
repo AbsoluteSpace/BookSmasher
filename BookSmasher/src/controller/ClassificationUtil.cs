@@ -1,12 +1,13 @@
 ﻿using BookSmasher.src.model;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace BookSmasher.src.controller
 {
+    // Useful tools to help with classification.
     public static class ClassificationUtil
     {
+        // Construct feature matrix using examples.
         public static List<List<int>> ConstructMatrixX(List<string> bagOfWords, List<SentenceExample> examples)
         {
             var retVal = new List<List<int>>();
@@ -15,38 +16,34 @@ namespace BookSmasher.src.controller
             for (int i = 0; i < examples.Count; i++)
             {
                 retVal.Add(new List<int>());
+                var sentence = examples[i];
 
-                // initialize with 0 by default for the correct length
+                // Add words within the sentence as features.
                 for (int j = 0; j < bagOfWords.Count; j++)
                 {
-                    retVal[i].Add(0);
+                    var valToAdd = sentence.wordIndexes.Contains(j) ? 1 : 0;
+                    retVal[i].Add(valToAdd);
                 }
 
-                var sentence = examples[i];
-                // TODO check not off by 1
-                foreach (var wordIdx in sentence.wordIndexes)
-                {
-                    retVal[i][wordIdx] = 1;
-                }
-
-                // add prevSentence classification as feature
-                retVal[i].Add(examples[i].prevSentenceClassification);
-                // add adjacentSentence classifications as features
-                retVal[i].AddRange(examples[i].adjacentSentenceClassification);
+                // Add prevSentence classification as feature.
+                retVal[i].Add(sentence.prevSentenceClassification);
+                // Add adjacentSentence classifications as features.
+                retVal[i].AddRange(sentence.adjacentSentenceClassification);
             }
 
             return retVal;
         }
 
-        public static List<List<int>> GenerateFakeX()
+        // Generate a fake feature matrix (filled with random vals) with input size.
+        public static List<List<int>> GenerateFakeX(int numExamples, int numFeatures)
         {
             var output = new List<List<int>>();
             var rand = new Random();
 
-            for (int i = 0; i < 200; i++)
+            for (int i = 0; i < numExamples; i++)
             {
                 var toAdd = new List<int>();
-                for (int j = 0; j < 40; j++)
+                for (int j = 0; j < numFeatures; j++)
                 {
                     toAdd.Add(rand.Next(0, 4));
                 }
@@ -56,22 +53,22 @@ namespace BookSmasher.src.controller
             return output;
         }
 
+        // Generate random fake labels corresponding to a feature matrix.
         public static List<int> GenerateFakeY(List<List<int>> X)
         {
             var output = new List<int>();
+            var numFeatures = X[0].Count;
+            var rand = new Random();
+
+            var firstSplit = rand.Next(0, numFeatures - 1);
+            var secondSplit = rand.Next(0, numFeatures - 1);
 
             for (int i = 0; i < X.Count; i++)
             {
-                if (X[i][4] == 1 || X[i][2] == 0)
+                if (X[i][firstSplit] == 1)
                 {
-                    if (X[i][6] == 1 || X[i][5] == 0)
-                    {
-                        output.Add(1);
-                    }
-                    else
-                    {
-                        output.Add(3);
-                    }
+                    var valToAdd = X[i][secondSplit] == 0 ? 1 : 3;
+                    output.Add(valToAdd);
                 }
                 else
                 {

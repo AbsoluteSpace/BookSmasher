@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace Classifier.src.machineLearning
 {
-    // Cluster the input data just to see what happens and so we can glimpse at what is before cur sentence
-    public class KMeans: IMLModel
+    // Cluster the input data. TODO.
+    public class KMeans
     {
     }
 }

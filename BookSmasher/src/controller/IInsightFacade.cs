@@ -2,24 +2,29 @@
 
 namespace BookSmasher.src.controller
 {
-    // Contains high level methods for the project
+    // Contains high level methods.
     interface IInsightFacade
     {
-        // add new book to the local storage of books
-        // TODO add kind of book uploaded
+        // Add new book.
         List<string> AddBook(string id, string content);
 
-        // remove book from local storage of books
+        // Remove book.
         List<string> RemoveBook(string id);
 
-        // list books currently in local storage
+        // List added books.
         List<string> ListBooks();
 
-        // train model for book combination in local storage
+        // List added book collections.
+        List<string> ListBookCollectionNames();
+
+        // Remove book collection.
+        List<string> RemoveBookCollection(string id);
+
+        // Train model based on some combination of added books.
+        // numExamplesToClassify and numAdjacentExamples are hyperparameters for number training examples.
         void TrainModel(List<string> ids, int numExamplesToClassify, int numAdjacentExamples);
 
-        // generate new book from two provided books
-        // TODO undecided params
+        // Generate new book from provided book collection.
         string GenerateBook(string id, int maxDepth, int numTrees, int numAdjacentExamples);
     }
 }

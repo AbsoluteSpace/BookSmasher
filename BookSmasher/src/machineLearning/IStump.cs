@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace BookSmasher.src.machineLearning
 {
+    // Interface for stumps.
     public interface IStump
     {
         int splitVariable { get; set; }

@@ -2,15 +2,16 @@
 
 namespace BookSmasher.src.controller
 {
+    // Class to help check id information.
     public static class IdHelper
     {
-        // TODO sometimes have to list ids just to send to this which feels extra
+        // Return true if the id is already added in addedIds.
         public static bool IdAlreadyAdded(string id, List<string> addedIds)
         {
             return addedIds.Contains(id);
         }
 
-        // TODO add more conditions to check if id is good
+        // Returns true if the id isn't null or just whitespace.
         public static bool IsValid(string id)
         {
             return !string.IsNullOrWhiteSpace(id);

@@ -1,26 +1,17 @@
 ﻿using BookSmasher.src.model;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BookSmasher.src.controller
 {
+    // Class to store books not globally like now. Unfinished.
     public class BookKeeper
     {
-        public Book book1 { get; set; }
-        public Book book2 { get; set; }
+        public List<Book> books { get; set; }
 
         public BookKeeper()
         {
-
+            books = new List<Book>();
         }
 
-        // return filepath to the book -> for now just store book as variable
-        public string CacheBook(Book book)
-        {
-            // just store book as above
-            return null;
-        }
     }
 }

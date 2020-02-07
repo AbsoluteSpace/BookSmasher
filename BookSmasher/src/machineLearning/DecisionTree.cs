@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace BookSmasher.src.machineLearning
@@ -20,9 +18,8 @@ namespace BookSmasher.src.machineLearning
             _stump = stump;
         }
 
-        // TODO all of these are going to need a return type of some sort
         public void Fit(List<List<int>> X, List<int> y)
-        {// TODO watch out fr empty X in all of these cases
+        {
             int numExamples = X.Count;
             int numFeatures = numExamples != 0 ? X[0].Count : 0;
 
@@ -30,12 +27,8 @@ namespace BookSmasher.src.machineLearning
 
             if (_maxDepth <= 1 || _stump.splitVariable == -1)
             {
-                // either max depth reached or decision stump does nothing, so use the stump
-                //_stump = null;
-                //splitModel = null;
                 subModel1 = null;
                 subModel0 = null;
-
                 return;
 
             }
@@ -54,19 +47,9 @@ namespace BookSmasher.src.machineLearning
                 }
             }
 
-            // TODO fix this
-            //if (ReferenceEquals(_stump.GetType(), new DecisionStumpInfoGain()))
-            //{
-                subModel1 = new DecisionTree(_maxDepth - 1, new DecisionStumpInfoGain());
-                subModel0 = new DecisionTree(_maxDepth - 1, new DecisionStumpInfoGain());
-
-            //} else
-            //{
-            //    subModel1 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
-            //    subModel0 = new DecisionTree(_maxDepth - 1, new RandomStumpInfoGain());
-            //}
-
+            // TODO fix this to add back in randomness.
             if (y1.Count != 0) {
+                subModel1 = new DecisionTree(_maxDepth - 1, new DecisionStumpInfoGain());
                 subModel1.Fit(X.Where(x => x[_stump.splitVariable] > _stump.splitValue).ToList(), y1);
             } else
             {
@@ -75,6 +58,7 @@ namespace BookSmasher.src.machineLearning
 
             if (y0.Count != 0)
             {
+                subModel0 = new DecisionTree(_maxDepth - 1, new DecisionStumpInfoGain());
                 subModel0.Fit(X.Where(x => x[_stump.splitVariable] <= _stump.splitValue).ToList(), y0);
             }
             else

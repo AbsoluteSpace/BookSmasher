@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 
 namespace BookSmasher.src.model
@@ -7,20 +6,19 @@ namespace BookSmasher.src.model
     // Collection of Books
     class BookCollection
     {
-        // name of collection is ids
-        // TODO customize collection name
+        // Name of collection is id1_id2_..._idN.
         public string id { get; set; }
 
-        // store ids of combined books
+        // Store ids of combined books.
         public List<string> ids { get; set; }
 
-        // combined bag of words associated with each book
+        // Combined bag of words associated with each book.
         public List<string> bagOfWords { get; set; }
 
-        // all sentences
+        // All sentences.
         public List<SentenceExample> sentences { get; set; }
 
-        // examples for training the model
+        // Examples and labels for training the model.
         public List<SentenceExample> trainingExamples { get; set; }
         public List<int> trainingLabels { get; set; }
 
@@ -38,7 +36,7 @@ namespace BookSmasher.src.model
                 builder.Append(id + " ");
             }
 
-            // names with whitespaces are hard
+            // Names with whitespaces are hard.
             id = builder.ToString().TrimEnd().Replace(' ', '_');
         }
     }

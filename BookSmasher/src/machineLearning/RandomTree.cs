@@ -14,13 +14,13 @@ namespace BookSmasher.src.machineLearning
 
         public void Fit(List<List<int>> X, List<int> y)
         {
-            // TODO this is duplicated
+            // TODO this is duplicated.
             int numExamples = X.Count;
 
             var bootstrapX = new List<List<int>>();
             var bootstrapY = new List<int>();
 
-            // fill up array with random examples with replacement
+            // Fill up array with random examples with replacement.
             var rand = new Random();
             for (int i = 0; i < numExamples; i++)
             {

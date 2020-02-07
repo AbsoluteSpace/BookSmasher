@@ -37,18 +37,16 @@ namespace BookSmasher.src.machineLearning
             return yhat.ToList();
         }
 
-        // TODO want to change this to not be list of list
         public void Fit(List<List<int>> X, List<int> y, int[] splitFeatures = null)
         {
             int numExamples = X.Count;
-            int numFeatures = numExamples != 0 ? X[0].Count : 0; // all elements should be the same size TODO THIS WILL PROBABLY BE PROB
+            int numFeatures = numExamples != 0 ? X[0].Count : 0;
 
             if (numExamples == 0 || numFeatures == 0)
             {
                 return;
             }
 
-            // TODO improve
             int[] count = new int[y.Max() + 1];
             foreach (var i in y)
             {
@@ -80,9 +78,8 @@ namespace BookSmasher.src.machineLearning
 
             foreach(var d in splitFeatures)
             {
-                // check that is np.unique(X[:,d])
                 var distinctThresholds = X.Select(x => x[d]).Distinct();
-                var thresholds = distinctThresholds.OrderBy(o => o).ToList(); // low to high?
+                var thresholds = distinctThresholds.OrderBy(o => o).ToList();
 
                 foreach(var val in thresholds)
                 {
@@ -150,7 +147,6 @@ namespace BookSmasher.src.machineLearning
 
         public double Entropy(List<double> vector)
         {
-            // might be able to do this with a sum
             double entropy = 0;
             foreach (var prob in vector)
             {
@@ -162,7 +158,6 @@ namespace BookSmasher.src.machineLearning
 
         public int GetArgMax(int[] count)
         {
-            // TODO not great
             return count.ToList().IndexOf(count.Max());
         }
 
