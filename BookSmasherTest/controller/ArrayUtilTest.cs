@@ -2,9 +2,9 @@ using BookSmasher.src.controller;
 using System.Collections.Generic;
 using Xunit;
 
-namespace BookSmasherTest
+namespace BookSmasherTest.controller
 {
-    public class UtilTest
+    public class ArrayUtilTest
     {
         [Fact]
         public void FindModeBasicTest()

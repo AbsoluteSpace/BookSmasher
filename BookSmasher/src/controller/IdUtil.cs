@@ -3,7 +3,7 @@
 namespace BookSmasher.src.controller
 {
     // Class to help check id information.
-    public static class IdHelper
+    public static class IdUtil
     {
         // Return true if the id is already added in addedIds.
         public static bool IdAlreadyAdded(string id, List<string> addedIds)

@@ -88,7 +88,7 @@ namespace BookSmasher.src.controller
             var addedIds = insightFacade.ListBooks();
 
             foreach (var id in ids) {
-                if (!IdHelper.IdAlreadyAdded(id, addedIds) || !IdHelper.IsValid(id))
+                if (!IdUtil.IdAlreadyAdded(id, addedIds) || !IdUtil.IsValid(id))
                 {
                     Console.WriteLine($"Aborting, id: {id} is invalid.");
                     return;
@@ -128,7 +128,7 @@ namespace BookSmasher.src.controller
             var id = Console.ReadLine().Trim();
             var addedColIds = insightFacade.ListBookCollectionNames();
 
-            if (!IdHelper.IdAlreadyAdded(id, addedColIds) || !IdHelper.IsValid(id))
+            if (!IdUtil.IdAlreadyAdded(id, addedColIds) || !IdUtil.IsValid(id))
             {
                 Console.WriteLine($"Aborting, id: {id} is invalid.");
                 return;

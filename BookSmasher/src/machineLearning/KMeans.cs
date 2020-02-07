@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Classifier.src.machineLearning
+namespace BookSmasher.src.machineLearning
 {
     // Cluster the input data. TODO.
     public class KMeans

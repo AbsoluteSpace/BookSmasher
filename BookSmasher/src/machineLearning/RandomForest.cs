@@ -1,8 +1,9 @@
 ﻿using BookSmasher.src.machineLearning;
+using BookSmasher.src.controller;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Classifier.src.machineLearning
+namespace BookSmasher.src.machineLearning
 {
     // Build random forest model from data once it is labelled.
     public class RandomForest

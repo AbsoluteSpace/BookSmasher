@@ -29,7 +29,7 @@ namespace BookSmasher.src.controller
             }
 
             // Check id validity.
-            if (IdHelper.IdAlreadyAdded(id, _bookIds) || !IdHelper.IsValid(id))
+            if (IdUtil.IdAlreadyAdded(id, _bookIds) || !IdUtil.IsValid(id))
             {
                 throw new InvalidOperationException("Id is invalid.");
             }
@@ -57,7 +57,7 @@ namespace BookSmasher.src.controller
 
         public List<string> RemoveBook(string id)
         {
-            if (!IdHelper.IdAlreadyAdded(id, _bookIds) || !IdHelper.IsValid(id))
+            if (!IdUtil.IdAlreadyAdded(id, _bookIds) || !IdUtil.IsValid(id))
             {
                 throw new InvalidOperationException("Id is invalid.");
             }
@@ -71,7 +71,7 @@ namespace BookSmasher.src.controller
 
         public List<string> RemoveBookCollection(string id)
         {
-            if (!IdHelper.IdAlreadyAdded(id, _bookCollectionIds) || !IdHelper.IsValid(id))
+            if (!IdUtil.IdAlreadyAdded(id, _bookCollectionIds) || !IdUtil.IsValid(id))
             {
                 throw new InvalidOperationException("Id is invalid.");
             }

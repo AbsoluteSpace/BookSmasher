@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="controller\" />
     <Folder Include="machineLearning\" />
     <Folder Include="model\" />
   </ItemGroup>

@@ -30,7 +30,5 @@ namespace BookSmasher.src.model
         {
             wordIndexes = new List<int>();
         }
-
-        // TODO need way to get all features lined up right and stored
     }
 }
