@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BookSmasher.src.controller
 {
-    // Displays information on the console
+    // Displays information on the console.
     public class Renderer
     {
         // TODO things that are hyperparameters. Undecided on how to set (CV).

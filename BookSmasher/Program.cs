@@ -5,6 +5,11 @@ namespace BookSmasher
 {
     class Program
     {
+
+         /*
+         * cat,C:\Users\Q\Desktop\test.txt
+         * dog,C:\Users\Q\Desktop\test2.txt
+         */
         static void Main(string[] args)
         {
             var keepLooping = true;

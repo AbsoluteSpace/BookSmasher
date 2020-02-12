@@ -8,11 +8,8 @@ namespace BookSmasher.src.controller
 {
     public class InsightFacade : IInsightFacade
     {
-        private List<string> _bookIds = new List<string>();
-        private List<Book> _books = new List<Book>();
-
-        private List<BookCollection> _bookCollections = new List<BookCollection>();
-        private List<string> _bookCollectionIds = new List<string>();
+        private Dictionary<string, Book> _books = new Dictionary<string, Book>();
+        private Dictionary<string, BookCollection> _bookCollections = new Dictionary<string, BookCollection>();
 
         private List<string> _bagOfWords = new List<string>();
 
@@ -29,7 +26,7 @@ namespace BookSmasher.src.controller
             }
 
             // Check id validity.
-            if (IdUtil.IdAlreadyAdded(id, _bookIds) || !IdUtil.IsValid(id))
+            if (IdUtil.IdAlreadyAdded(id, _books.Keys.ToList()) || !IdUtil.IsValid(id))
             {
                 throw new InvalidOperationException("Id is invalid.");
             }
@@ -38,49 +35,45 @@ namespace BookSmasher.src.controller
             var newBook = bookBuilder.ConstructBook(id, content);
             _bagOfWords = bookBuilder.bagOfWords;
 
-            _books.Add(newBook);
-            _bookIds.Add(id);
+            // bad storage
+            // paginate book's line 
 
-            return _bookIds;
+            _books.Add(id, newBook);
+
+            return _books.Keys.ToList();
         }
 
 
         public List<string> ListBooks()
         {
-            return _bookIds;
+            return _books.Keys.ToList();
         }
 
         public List<string> ListBookCollectionNames()
         {
-            return _bookCollectionIds;
+            return _bookCollections.Keys.ToList();
         }
 
         public List<string> RemoveBook(string id)
         {
-            if (!IdUtil.IdAlreadyAdded(id, _bookIds) || !IdUtil.IsValid(id))
+            if (!IdUtil.IdAlreadyAdded(id, _books.Keys.ToList()) || !IdUtil.IsValid(id))
             {
                 throw new InvalidOperationException("Id is invalid.");
             }
 
-            var idx = _bookIds.FindIndex(x => x.Equals(id));
-
-            _books.RemoveAt(idx);
-            _bookIds.RemoveAt(idx);
-            return _bookIds;
+            _books.Remove(id);
+            return _books.Keys.ToList();
         }
 
         public List<string> RemoveBookCollection(string id)
         {
-            if (!IdUtil.IdAlreadyAdded(id, _bookCollectionIds) || !IdUtil.IsValid(id))
+            if (!IdUtil.IdAlreadyAdded(id, _bookCollections.Keys.ToList()) || !IdUtil.IsValid(id))
             {
                 throw new InvalidOperationException("Id is invalid.");
             }
 
-            var idx = _bookCollectionIds.FindIndex(x => x.Equals(id));
-
-            _bookCollections.RemoveAt(idx);
-            _bookCollectionIds.RemoveAt(idx);
-            return _bookCollectionIds;
+            _bookCollections.Remove(id);
+            return _bookCollections.Keys.ToList();
         }
 
         // TODO refactor
@@ -92,13 +85,13 @@ namespace BookSmasher.src.controller
                 throw new Exception("At least 2 ids must be specified.");
             }
 
-            var trainingBooks = _books.Where(book => ids.Contains(book.id)).ToList();
+            var trainingBooks = _books.Where(book => ids.Contains(book.Key)).ToList();
 
             // Classify all sentences.
             var allSentences = new List<SentenceExample>();
             foreach (var book in trainingBooks)
             {
-                allSentences.AddRange(book.sentences);
+                allSentences.AddRange(book.Value.sentences);
             }
 
             Random rand = new Random();
@@ -124,14 +117,13 @@ namespace BookSmasher.src.controller
             bookCol.trainingLabels = trainingData.Item2;
             bookCol.bagOfWords = _bagOfWords;
 
-            _bookCollections.Add(bookCol);
-            _bookCollectionIds.Add(bookCol.id);
+            _bookCollections.Add(bookCol.id, bookCol);
 
         }
 
         public string GenerateBook(string id, int maxDepth, int numTrees, int numAdjacentExamples)
         {
-            var bookCol = _bookCollections[_bookCollectionIds.IndexOf(id)];
+            var bookCol = _bookCollections[id];
 
             // Train model.
             //var model = new RandomForest(maxDepth, numTrees);
