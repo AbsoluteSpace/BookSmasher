@@ -79,5 +79,38 @@ namespace BookSmasher.src.controller
             return output;
         }
 
+        // X is things that want euclidian distance to.
+        // Output is list where each entry is list of euclidian distances of x point to xtest points. 
+        public static List<List<double>> EuclidianDistance(List<List<double>> X, List<List<double>> XTest)
+        {
+            var retVal = new List<List<double>>();
+
+            for (int i = 0; i < X.Count; i++)
+            {
+                var innerList = new List<double>();
+
+                for (int j = 0; j < XTest.Count; j++)
+                {
+                    innerList.Add(Distance(X[i], XTest[j]));
+                }
+
+                retVal.Add(innerList);
+            }
+
+            return retVal;
+        }
+
+        public static double Distance(List<double> Xi, List<double> Xj)
+        {
+            double retVal = 0;
+
+            for (int i = 0; i < Xi.Count; i++)
+            {
+                retVal += Math.Pow((Xi[i] - Xj[i]), 2);
+            }
+
+            return Math.Sqrt(retVal);
+        }
+
     }
 }
