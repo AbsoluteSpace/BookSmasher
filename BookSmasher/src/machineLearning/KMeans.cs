@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace BookSmasher.src.machineLearning
 {
@@ -25,6 +24,8 @@ namespace BookSmasher.src.machineLearning
             var doublesList = new List<List<double>>();
             var rand = new Random();
 
+            _means = new List<List<double>>();
+
             foreach (var xi in X)
             {
                 doublesList.Add(xi.Select(x => (double)x).ToList());
@@ -37,11 +38,11 @@ namespace BookSmasher.src.machineLearning
             }
 
             // track whether means are still updating
-            var changes = true;
+            var stop = false;
 
             var labels = new Dictionary<int, List<List<double>>>();
 
-            while (changes)
+            while (!stop)
             {
                 for (int i = 0; i < _k; i++)
                 {
@@ -62,7 +63,7 @@ namespace BookSmasher.src.machineLearning
 
                 for (int i = 0; i < _k; i++)
                 {
-                    _means[i] = ClassificationUtil.Average(labels[i]);
+                    _means[i] = ClassificationUtil.Average(labels[i]) ?? _means[i];
                 }
 
                 // keep track of old mean assignments throughout and if under
@@ -70,7 +71,7 @@ namespace BookSmasher.src.machineLearning
                 var firstNotSecond = prevMean.Except(_means).ToList();
                 var secondNotFirst = _means.Except(prevMean).ToList();
 
-                changes = !firstNotSecond.Any() && !secondNotFirst.Any();
+                stop = !firstNotSecond.Any() && !secondNotFirst.Any();
             }
 
             double score = 0;
@@ -81,7 +82,9 @@ namespace BookSmasher.src.machineLearning
             {
                 var doubleList = new List<List<double>>();
                 doubleList.Add(_means[key]);
-                score += ClassificationUtil.EuclidianDistance(labels[key], doubleList)[0].Sum();
+
+                var distanceList = ClassificationUtil.EuclidianDistance(labels[key], doubleList);
+                score += distanceList.Count != 0 ? distanceList[0].Sum() : 0;
             }
 
             return score;

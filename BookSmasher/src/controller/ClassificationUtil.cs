@@ -26,9 +26,13 @@ namespace BookSmasher.src.controller
                 }
 
                 // Add prevSentence classification as feature.
-                retVal[i].Add(sentence.prevSentenceClassification);
+                if (sentence.prevSentenceClassification != -1) {
+                    retVal[i].Add(sentence.prevSentenceClassification);
+                }
                 // Add adjacentSentence classifications as features.
-                retVal[i].AddRange(sentence.adjacentSentenceClassification);
+                if (sentence.adjacentSentenceClassification != null) {
+                    retVal[i].AddRange(sentence.adjacentSentenceClassification);
+                }
             }
 
             return retVal;
@@ -117,6 +121,11 @@ namespace BookSmasher.src.controller
         public static List<double> Average(List<List<double>> X)
         {
             var retVal = new List<double>();
+
+            if (X.Count == 0)
+            {
+                return null;
+            }
 
             for(int i = 0; i < X[0].Count; i++)
             {

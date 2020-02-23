@@ -94,14 +94,22 @@ namespace BookSmasher.src.controller
                 allSentences.AddRange(book.Value.sentences);
             }
 
-            Random rand = new Random();
-            foreach(var sentence in allSentences)
+            var rand = new Random();
+            RandomUtil.Shuffle(allSentences, rand);
+
+            // TODO -> magic number, should be hyperparam
+            var clusteringModel = new KMeans(4);
+
+            clusteringModel.Fit(ClassificationUtil.ConstructMatrixX(_bagOfWords,
+                allSentences.Take(allSentences.Count / 2).ToList()));
+            var clusterList = clusteringModel.Predict(ClassificationUtil.ConstructMatrixX(_bagOfWords, allSentences));
+
+            for (int i = 0; i < clusterList.Count; i++)
             {
-                sentence.classification = rand.Next(0, 4);
+                allSentences[i].classification = clusterList[i];
             }
 
             // Get random assortment of sentences to train on.
-            RandomUtil.Shuffle(allSentences, rand);
             var sentencesToClassify = new List<SentenceExample>();
             for (int i = 0; i < allSentences.Count && i < numExamplesToClassify; i++)
             {

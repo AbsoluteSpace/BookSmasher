@@ -29,6 +29,7 @@ namespace BookSmasher.src.model
         public SentenceExample()
         {
             wordIndexes = new List<int>();
+            prevSentenceClassification = -1;
         }
     }
 }
