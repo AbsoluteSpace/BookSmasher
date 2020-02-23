@@ -100,6 +100,7 @@ namespace BookSmasher.src.controller
             return retVal;
         }
 
+
         public static double Distance(List<double> Xi, List<double> Xj)
         {
             double retVal = 0;
