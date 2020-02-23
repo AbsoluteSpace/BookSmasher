@@ -18,7 +18,8 @@ namespace BookSmasher.src.machineLearning
             _means = new List<List<double>>();
         }
 
-        public void Fit(List<List<int>> X)
+        // Fit the KMeans clusterer. Returns the score of this clustering.
+        private double FitHelper(List<List<int>> X)
         {
             // duplicated code, but only twice, don't refactor yet
             var doublesList = new List<List<double>>();
@@ -38,11 +39,10 @@ namespace BookSmasher.src.machineLearning
             // track whether means are still updating
             var changes = true;
 
-            while(changes)
-            {
-                // randomly select k points from X to be means.
-                var labels = new Dictionary<int, List<List<double>>>();
+            var labels = new Dictionary<int, List<List<double>>>();
 
+            while (changes)
+            {
                 for (int i = 0; i < _k; i++)
                 {
                     labels[i] = new List<List<double>>();
@@ -73,12 +73,42 @@ namespace BookSmasher.src.machineLearning
                 changes = !firstNotSecond.Any() && !secondNotFirst.Any();
             }
 
+            double score = 0;
+
+            // TODO rewrite -> it's unclear.
+            // calculates a score using the distance of all points from their mean.
+            foreach(var key in labels.Keys)
+            {
+                var doubleList = new List<List<double>>();
+                doubleList.Add(_means[key]);
+                score += ClassificationUtil.EuclidianDistance(labels[key], doubleList)[0].Sum();
+            }
+
+            return score;
+
         }
 
         // Calls fit but a number of times and determines the best one.
         // Determine best by what has lowest sum of distances from points to their means.
-        public void FitWithRandomRestarts()
+        // TODO: magic number, should be a hyperparameter maybe.
+        public void Fit(List<List<int>> X, int numRandomRestarts = 20)
         {
+            var bestMeansSoFar = new List<List<double>>();
+            var bestScore = double.PositiveInfinity;
+
+            for (int i = 0; i < numRandomRestarts; i++)
+            {
+                var newScore = FitHelper(X);
+
+                if (newScore < bestScore)
+                {
+                    bestScore = newScore;
+                    bestMeansSoFar = _means;
+                }
+
+            }
+
+            _means = bestMeansSoFar;
 
         }
 
