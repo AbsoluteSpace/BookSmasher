@@ -20,20 +20,63 @@ namespace BookSmasher.src.machineLearning
 
         public void Fit(List<List<int>> X)
         {
-            // randomly select k points from X to be means.
-            // store a collection of these means
+            // duplicated code, but only twice, don't refactor yet
+            var doublesList = new List<List<double>>();
+            var rand = new Random();
 
-            // go through each point and assign it to the closest mean by euclidian distance
+            foreach (var xi in X)
+            {
+                doublesList.Add(xi.Select(x => (double)x).ToList());
+            }
 
-            // update location of means by weight of points assigned to it
+            for (int i = 0; i < _k; i++)
+            {
+                var idx = rand.Next(0, X.Count - 1);
+                _means.Add(doublesList[idx]);
+            }
 
-            // keep track of old mean assignments throughout and if under
-            // a certain number of points changed means, stop (or after some number of iterations)
+            // track whether means are still updating
+            var changes = true;
 
+            while(changes)
+            {
+                // randomly select k points from X to be means.
+                var labels = new Dictionary<int, List<List<double>>>();
+
+                for (int i = 0; i < _k; i++)
+                {
+                    labels[i] = new List<List<double>>();
+                }
+
+                // go through each point and assign it to the closest mean by euclidian distance
+                var distances = ClassificationUtil.EuclidianDistance(doublesList, _means);
+
+                for (int i = 0; i < distances.Count; i++)
+                {
+                    labels[distances[i].IndexOf(distances[i].Max())].Add(doublesList[i]);
+                }
+
+                // update location of means by weight of points assigned to it
+
+                var prevMean = _means;
+
+                for (int i = 0; i < _k; i++)
+                {
+                    _means[i] = ClassificationUtil.Average(labels[i]);
+                }
+
+                // keep track of old mean assignments throughout and if under
+                // a certain number of points changed means, stop (or after some number of iterations)
+                var firstNotSecond = prevMean.Except(_means).ToList();
+                var secondNotFirst = _means.Except(prevMean).ToList();
+
+                changes = !firstNotSecond.Any() && !secondNotFirst.Any();
+            }
 
         }
 
-        // calls fit but a number of times and determines the best one.
+        // Calls fit but a number of times and determines the best one.
+        // Determine best by what has lowest sum of distances from points to their means.
         public void FitWithRandomRestarts()
         {
 

@@ -112,5 +112,25 @@ namespace BookSmasher.src.controller
             return Math.Sqrt(retVal);
         }
 
+        // Take in list of examples, and return list where each entry is an average feature from input.
+        public static List<double> Average(List<List<double>> X)
+        {
+            var retVal = new List<double>();
+
+            for(int i = 0; i < X[0].Count; i++)
+            {
+                double sumOfVals = 0;
+
+                foreach(var example in X)
+                {
+                    sumOfVals += example[i];
+                }
+
+                retVal.Add(sumOfVals / X.Count);
+            }
+
+            return retVal;
+        }
+
     }
 }
