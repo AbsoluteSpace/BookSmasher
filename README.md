@@ -4,7 +4,7 @@ Currently combines multiple books to produce a new one.
 
 This is done by grabbing every sentence in each book and using a bag of words technique to create feature vectors.
 Other features of each sentence include the sentence before it and sentences it's compared against during training.
-Features in development are assigning each sentence a group using a clustering algorithm like KMeans or DBScan.
+In addition, I use a KMeans clustering algorithm to assign each sentence a group that is used to help generate the book later.
 
 The user then trains classifiers (currently decision trees, but close to supporting random forests) using some subset of the sentences of the added books
 and classifying them manually. Once this is complete, the classifier classifies the remaining sentences, and prints their new order in an
